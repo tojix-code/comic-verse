@@ -9,7 +9,7 @@ const items = [
   { href: "/novels", label: "Novels", Icon: BookOpen },
   { href: "/manga", label: "Manga", Icon: BookOpen },
   { href: "/browse", label: "Browse", Icon: Compass },
-  { href: "/library", label: "Library", Icon: Bookmark },
+  { href: "/library", label: "Bookmarks", Icon: Bookmark },
 ];
 
 export function MobileBottomNav() {
