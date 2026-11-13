@@ -12,7 +12,7 @@ export function ReviewQueue({initialItems}:{initialItems:Item[]}) {
   async function syncChapters(item:Item) {
     setBusy(item.id);setMessage("");
     try {
-      const response=await fetch(`/api/admin/providers/mangadex/${encodeURIComponent(item.sourceSeriesId)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"sync"})});
+      const endpoint=item.sourceKey==="mangadex"?`/api/admin/providers/mangadex/${encodeURIComponent(item.sourceSeriesId)}`:`/api/admin/providers/${encodeURIComponent(item.sourceKey)}`;\n      const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(item.sourceKey==="mangadex"?{action:"sync"}:{action:"sync",providerId:item.sourceSeriesId})});
       const result=await response.json();
       if(!response.ok||!result.success) throw new Error(result.message||"Chapter sync failed.");
       setMessage(result.message);
@@ -35,7 +35,7 @@ export function ReviewQueue({initialItems}:{initialItems:Item[]}) {
     {items.length===0?<div className="home-empty"><CheckCircle2 size={28}/><h2>Queue is clear</h2><p>There are no unpublished titles waiting for review.</p><Link href="/admin">Return to catalogue management</Link></div>:
       <div className="review-list">{items.map(item=><article key={item.id}>
         <div className="review-list-main"><div><h2>{item.title}</h2><p>{item.contentType} · Source: {item.sourceKey} · {item.chapters} chapter records</p><small>Added {new Date(item.createdAt).toLocaleDateString("en-IN")}</small></div><span className="review-pending">DRAFT</span></div>
-        <div className="review-actions"><Link href={`/admin#catalogue`}>Edit catalogue <ExternalLink size={13}/></Link>{item.sourceKey==="mangadex" && <button className="review-sync" disabled={!!busy} onClick={()=>void syncChapters(item)}>{busy===item.id?<Loader2 size={15} className="animate-spin"/>:"↻"} Sync chapters</button>}<button disabled={!!busy} onClick={()=>void publish(item)}>{busy===item.id?<Loader2 size={15} className="animate-spin"/>:<CheckCircle2 size={15}/>} Approve &amp; publish</button></div>
+        <div className="review-actions"><Link href={`/admin#catalogue`}>Edit catalogue <ExternalLink size={13}/></Link>{["mangadex","comick","asura","weebcentral"].includes(item.sourceKey) && <button className="review-sync" disabled={!!busy} onClick={()=>void syncChapters(item)}>{busy===item.id?<Loader2 size={15} className="animate-spin"/>:"↻"} Sync chapters</button>}<button disabled={!!busy} onClick={()=>void publish(item)}>{busy===item.id?<Loader2 size={15} className="animate-spin"/>:<CheckCircle2 size={15}/>} Approve &amp; publish</button></div>
       </article>)}</div>}
   </div>;
 }
