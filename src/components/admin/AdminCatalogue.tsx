@@ -1,15 +1,79 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Loader2, PlusCircle, BookOpen, ImagePlus, Send } from "lucide-react";
+import { Loader2, PlusCircle, BookOpen, ImagePlus, Send, Search, CheckCircle2 } from "lucide-react";
 
 type SeriesOption = { id: string; title: string; slug: string; published: boolean };
+type ProviderTitle = { id: string; title: string; synopsis: string; coverUrl: string | null; contentType: string; status: string | null; year: number | null; tags: string[] };
 type Props = { initialSeries: SeriesOption[] };
 
 export function AdminCatalogue({ initialSeries }: Props) {
   const [titles, setTitles] = useState(initialSeries);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [provider, setProvider] = useState("mangadex");
+  const [providerQuery, setProviderQuery] = useState("");
+  const [providerResults, setProviderResults] = useState<ProviderTitle[]>([]);
+  const [searchingProvider, setSearchingProvider] = useState(false);
+
+  async function searchProvider(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (provider !== "mangadex" || providerQuery.trim().length < 2) return;
+    setSearchingProvider(true);
+    setMessage("");
+    setProviderResults([]);
+    try {
+      const response = await fetch(`/api/admin/providers/mangadex?q=${encodeURIComponent(providerQuery.trim())}`);
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || "Provider search failed.");
+      setProviderResults(result.results);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Provider search failed.");
+    } finally {
+      setSearchingProvider(false);
+    }
+  }
+
+  async function importProviderTitle(item: ProviderTitle) {
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/providers/mangadex", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: "mangadex", providerId: item.id, title: item.title, synopsis: item.synopsis, coverUrl: item.coverUrl, contentType: item.contentType, status: item.status, year: item.year }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || "Import failed.");
+      setMessage(result.message);
+      setTitles((items) => [{ id: result.data.id, title: item.title, slug: result.data.slug, published: false }, ...items]);
+      setProviderResults((items) => items.filter((candidate) => candidate.id !== item.id));
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Import failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function setVisibility(item: SeriesOption, published: boolean) {
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/catalogue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "set-published", seriesId: item.id, published }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || "Could not update visibility.");
+      setTitles((items) => items.map((entry) => entry.id === item.id ? { ...entry, published } : entry));
+      setMessage(result.message);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update visibility.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>, action: string) {
     event.preventDefault();
@@ -99,7 +163,7 @@ export function AdminCatalogue({ initialSeries }: Props) {
 
       <section className="admin-panel">
         <h2>Existing titles</h2>
-        {titles.length === 0 ? <p className="admin-note">No catalogue titles yet. Create your first draft above.</p> : <div className="admin-title-list">{titles.map((item) => <div key={item.id}><span>{item.title}</span><small>{item.published ? "Published" : "Draft"} · {item.slug}</small></div>)}</div>}
+        {titles.length === 0 ? <p className="admin-note">No catalogue titles yet. Create your first draft above.</p> : <div className="admin-title-list">{titles.map((item) => <div key={item.id}><span>{item.title}</span><small>{item.published ? "Published" : "Draft"} · {item.slug}</small>{item.published && <button type="button" disabled={busy} onClick={() => void setVisibility(item, false)}>Unpublish</button>}</div>)}</div>}
       </section>
     </div>
   );
