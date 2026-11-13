@@ -64,15 +64,19 @@ export default function LibraryPage() {
       }
 
       setEntries(result.data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+
+    // Reading history is optional: a history API failure must not hide saved titles.
+    try {
       const progressResponse = await fetch("/api/reading-progress", { cache: "no-store" });
       const progressResult = await progressResponse.json();
       if (progressResponse.ok && progressResult.success) setHistory(progressResult.data || []);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Something went wrong"
-      );
-    } finally {
-      setLoading(false);
+    } catch {
+      setHistory([]);
     }
   }, []);
 
@@ -168,13 +172,13 @@ export default function LibraryPage() {
 
           <div>
             <BookOpen size={19} />
-            <span>—</span>
-            <p>Reading now</p>
+            <span>{history.filter((item) => item.updatedAt && Date.now() - new Date(item.updatedAt).getTime() < 7 * 24 * 60 * 60 * 1000).length}</span>
+            <p>Active this week</p>
           </div>
 
           <div>
             <Clock3 size={19} />
-            <span>—</span>
+            <span>{history.length}</span>
             <p>Reading history</p>
           </div>
         </div>
