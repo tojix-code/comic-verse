@@ -17,6 +17,8 @@ import {
 
 import { authClient } from "@/lib/auth-client";
 
+type ReadingItem = { id:string; seriesTitle:string; chapterLabel:string|null; pageNumber:number; totalPages:number|null; updatedAt:string; slug:string|null; contentType:string|null; chapterId:string|null };
+
 type LibraryEntry = {
   id: string;
   title: string;
@@ -33,6 +35,7 @@ export default function LibraryPage() {
   const { data: session, isPending } = authClient.useSession();
 
   const [entries, setEntries] = useState<LibraryEntry[]>([]);
+  const [history, setHistory] = useState<ReadingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -61,6 +64,9 @@ export default function LibraryPage() {
       }
 
       setEntries(result.data || []);
+      const progressResponse = await fetch("/api/reading-progress", { cache: "no-store" });
+      const progressResult = await progressResponse.json();
+      if (progressResponse.ok && progressResult.success) setHistory(progressResult.data || []);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Something went wrong"
@@ -173,6 +179,24 @@ export default function LibraryPage() {
           </div>
         </div>
 
+        {history.length > 0 && (
+          <section className="library-reading-history">
+            <div className="library-section-header"><div><h2>Continue reading</h2><p>Recently updated reading progress.</p></div></div>
+            <div className="library-history-list">
+              {history.slice(0,8).map((item) => {
+                const isNovel = item.contentType === "novel" || item.contentType === "light-novel";
+                const base = isNovel ? "/novels" : "/comics";
+                const href = item.slug && item.chapterId ? `${base}/${item.slug}/chapter/${item.chapterId}` : item.slug ? `${base}/${item.slug}` : "#";
+                const progress = item.totalPages ? Math.min(100, Math.round(item.pageNumber / item.totalPages * 100)) : 0;
+                return <article key={item.id}>
+                  <div><h3>{item.seriesTitle}</h3><p>{item.chapterLabel || "Reading"} · Page {item.pageNumber}{item.totalPages ? ` of ${item.totalPages}` : ""}</p><div className="library-progress-track"><span style={{width:`${progress}%`}}/></div></div>
+                  {href !== "#" ? <Link href={href}>Resume reading <BookOpen size={14}/></Link> : <span className="library-history-unavailable">Chapter unavailable</span>}
+                </article>;
+              })}
+            </div>
+          </section>
+        )}
+
         <div className="library-section-header">
           <div>
             <h2>My collection</h2>
@@ -234,7 +258,7 @@ export default function LibraryPage() {
             </p>
 
             {entries.length === 0 && (
-              <Link className="account-join" href="/#search">
+              <Link className="account-join" href="/#discover">
                 <BookOpen size={15} />
                 Explore ComicVerse
               </Link>
