@@ -45,7 +45,7 @@ export default async function ComicDetailsPage({
   const firstChapter = chapters[chapters.length - 1];
 
   return (
-    <main className="details-page">
+    <main id="main-content" className="details-page">
       <section className="details-hero">
         <div className="details-cover">
           {comic.coverUrl ? (
