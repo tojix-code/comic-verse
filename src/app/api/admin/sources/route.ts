@@ -6,9 +6,9 @@ import { contentSource } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 const PROVIDERS = [
-  { sourceKey: "weebcentral", displayName: "WeebCentral", homepageUrl: "https://weebcentral.com", accessMode: "manual-link", notes: "Connector requires a verified, permitted integration before catalogue fetching can be enabled." },
-  { sourceKey: "asurascans", displayName: "Asura Scans", homepageUrl: "https://asuracomic.net", accessMode: "manual-link", notes: "Manual source links only until an authorized API or partner integration is configured." },
-  { sourceKey: "comick", displayName: "ComicK", homepageUrl: "https://comick.io", accessMode: "manual-link", notes: "Connector requires a verified, permitted integration before catalogue fetching can be enabled." },
+  { sourceKey: "weebcentral", displayName: "WeebCentral", homepageUrl: "https://weebcentral.com", accessMode: "provider-api", notes: "Uses the configured ComicVerse provider API; availability depends on upstream access and permissions." },
+  { sourceKey: "asura", displayName: "Asura Scans", homepageUrl: "https://asuracomic.net", accessMode: "provider-api", notes: "Uses the configured ComicVerse provider API; availability depends on upstream access and permissions." },
+  { sourceKey: "comick", displayName: "ComicK", homepageUrl: "https://comick.io", accessMode: "provider-api", notes: "Uses the configured ComicVerse provider API; availability depends on upstream access and permissions." },
   { sourceKey: "mangadex", displayName: "MangaDex", homepageUrl: "https://mangadex.org", accessMode: "public-api", notes: "Public API metadata search is available. Chapter-page reuse is subject to source terms and content rights." },
 ] as const;
 
@@ -31,7 +31,7 @@ export async function GET() {
         approved: saved?.approved ?? false,
         accessMode: saved?.accessMode ?? provider.accessMode,
         notes: saved?.notes ?? provider.notes,
-        configured: provider.sourceKey === "mangadex",
+        configured: provider.sourceKey === "mangadex" || (!!process.env.COMICVERSE_API_URL && ["comick", "asura", "weebcentral"].includes(provider.sourceKey)),
       };
     });
     return Response.json({ success: true, sources });
