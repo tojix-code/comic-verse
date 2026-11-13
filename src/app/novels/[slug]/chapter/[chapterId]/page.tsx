@@ -22,7 +22,7 @@ export default async function NovelReaderPage({ params }: { params: Promise<{ sl
   const previous = chapters[currentIndex-1], next = chapters[currentIndex+1];
   const label = current.title || (current.chapterNumber ? `Chapter ${current.chapterNumber}` : "Untitled Chapter");
 
-  return <main className="reader-page">
+  return <main id="main-content" className="reader-page">
     <div className="reader-topbar"><Link href={`/novels/${novel.slug}`} className="reader-back"><ArrowLeft size={17}/><span>Back to details</span></Link><div className="reader-series-name">{novel.title}</div><span className="reader-chapter-count">{currentIndex+1} / {chapters.length}</span></div>
     <ReaderControls previousHref={previous ? `/novels/${novel.slug}/chapter/${previous.id}` : undefined} nextHref={next ? `/novels/${novel.slug}/chapter/${next.id}` : undefined} />
     <section className="reader-heading"><span className="home-kicker">NOW READING · {novel.contentType.toUpperCase()}</span><h1>{label}</h1><p>{novel.title}</p>{pages.length>0 && <ReadingProgressTracker sourceKey={novel.sourceKey} sourceSeriesId={novel.sourceSeriesId} sourceChapterId={current.sourceChapterId} seriesTitle={novel.title} chapterLabel={label} totalPages={pages.length}/>}</section>
