@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const sourceKey = searchParams.get("sourceKey");
     const sourceSeriesId = searchParams.get("sourceSeriesId");
+    const sourceChapterId = searchParams.get("sourceChapterId");
 
     if (!sourceKey && !sourceSeriesId) {
       const rows = await db.select({
@@ -48,6 +49,7 @@ export async function GET(request: Request) {
       eq(readingProgress.userId, session.user.id),
       eq(readingProgress.sourceKey, sourceKey),
       eq(readingProgress.sourceSeriesId, sourceSeriesId),
+      ...(sourceChapterId ? [eq(readingProgress.sourceChapterId, sourceChapterId)] : []),
     )).orderBy(desc(readingProgress.updatedAt)).limit(1);
 
     return Response.json({ success: true, data: rows[0] ?? null });
