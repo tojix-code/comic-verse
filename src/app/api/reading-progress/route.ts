@@ -1,10 +1,10 @@
 import { headers } from "next/headers";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { readingProgress } from "@/db/schema";
+import { chapter, readingProgress, series } from "@/db/schema";
 
 export async function GET(request: Request) {
   try {
@@ -17,15 +17,38 @@ export async function GET(request: Request) {
     const sourceKey = searchParams.get("sourceKey");
     const sourceSeriesId = searchParams.get("sourceSeriesId");
 
+    if (!sourceKey && !sourceSeriesId) {
+      const rows = await db.select({
+        id: readingProgress.id,
+        sourceKey: readingProgress.sourceKey,
+        sourceSeriesId: readingProgress.sourceSeriesId,
+        sourceChapterId: readingProgress.sourceChapterId,
+        seriesTitle: readingProgress.seriesTitle,
+        chapterLabel: readingProgress.chapterLabel,
+        pageNumber: readingProgress.pageNumber,
+        totalPages: readingProgress.totalPages,
+        updatedAt: readingProgress.updatedAt,
+        slug: series.slug,
+        contentType: series.contentType,
+        chapterId: chapter.id,
+      }).from(readingProgress)
+        .leftJoin(series, and(eq(series.sourceKey, readingProgress.sourceKey), eq(series.sourceSeriesId, readingProgress.sourceSeriesId)))
+        .leftJoin(chapter, and(eq(chapter.seriesId, series.id), eq(chapter.sourceChapterId, readingProgress.sourceChapterId)))
+        .where(eq(readingProgress.userId, session.user.id))
+        .orderBy(desc(readingProgress.updatedAt))
+        .limit(50);
+      return Response.json({ success: true, data: rows });
+    }
+
     if (!sourceKey || !sourceSeriesId) {
-      return Response.json({ success: false, message: "Series details are required" }, { status: 400 });
+      return Response.json({ success: false, message: "Provide both sourceKey and sourceSeriesId, or omit both to load your history." }, { status: 400 });
     }
 
     const rows = await db.select().from(readingProgress).where(and(
       eq(readingProgress.userId, session.user.id),
       eq(readingProgress.sourceKey, sourceKey),
       eq(readingProgress.sourceSeriesId, sourceSeriesId),
-    )).limit(1);
+    )).orderBy(desc(readingProgress.updatedAt)).limit(1);
 
     return Response.json({ success: true, data: rows[0] ?? null });
   } catch (error) {
