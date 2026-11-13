@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { ReadingProgressTracker } from "@/components/reader/ReadingProgressTracker";
+import { ReaderControls } from "@/components/reader/ReaderControls";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,8 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
           {currentIndex + 1} / {chapters.length}
         </span>
       </div>
+
+      <ReaderControls previousHref={previousChapter ? `/comics/${comic.slug}/chapter/${previousChapter.id}` : undefined} nextHref={nextChapter ? `/comics/${comic.slug}/chapter/${nextChapter.id}` : undefined} />
 
       <section className="reader-heading">
         <span className="home-kicker">NOW READING</span>
