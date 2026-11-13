@@ -152,6 +152,21 @@ export async function POST(request: Request, { params }: Ctx) {
   if (!setting?.enabled) return Response.json({ success: false, message: "Enable this provider before importing." }, { status: 409 });
   try {
     const body = await request.json() as Record<string, unknown>;
+    if (body.action === "sync") {
+      if (typeof body.providerId !== "string" || !body.providerId.trim()) {
+        return Response.json({ success: false, message: "Invalid provider title ID." }, { status: 400 });
+      }
+      const [parent] = await db.select({ id: series.id }).from(series).where(and(eq(series.sourceKey, provider), eq(series.sourceSeriesId, body.providerId))).limit(1);
+      if (!parent) return Response.json({ success: false, message: "Import this provider title into the catalogue first." }, { status: 409 });
+      const feed = await fetchChapterCatalogue(provider, body.providerId);
+      const values = feed.chapters.map((item) => ({
+        id: randomUUID(), seriesId: parent.id, sourceChapterId: item.id,
+        chapterNumber: textValue(item.number, 32), title: item.title,
+        publishedAt: item.publishedAt && !Number.isNaN(Date.parse(item.publishedAt)) ? new Date(item.publishedAt) : null,
+      }));
+      if (values.length) await db.insert(chapter).values(values).onConflictDoNothing();
+      return Response.json({ success: true, message: `Checked ${values.length} chapter record(s); existing records were preserved.`, checked: values.length, hasMore: feed.hasMore });
+    }
     if (body.action === "import-chapters") {
       if (typeof body.providerId !== "string" || !Array.isArray(body.chapterIds) || body.chapterIds.length < 1 || body.chapterIds.length > 500 || body.chapterIds.some((id) => typeof id !== "string")) {
         return Response.json({ success: false, message: "Select between 1 and 500 chapter records." }, { status: 400 });
