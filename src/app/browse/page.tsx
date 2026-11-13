@@ -19,6 +19,7 @@ type BrowsePageProps = {
   searchParams: Promise<{
     q?: string;
     type?: string;
+    sort?: string;
   }>;
 };
 
@@ -33,6 +34,7 @@ export default async function BrowsePage({
   )
     ? params.type!
     : "all";
+  const sort = params.sort === "title" ? "title" : "recent";
 
   const conditions = [eq(series.published, true)];
 
@@ -48,7 +50,7 @@ export default async function BrowsePage({
     .select()
     .from(series)
     .where(and(...conditions))
-    .orderBy(desc(series.createdAt))
+    .orderBy(sort === "title" ? series.title : desc(series.createdAt))
     .limit(60)
     .catch((error) => {
       console.error("[browse-catalogue] Database unavailable:", error);
@@ -91,9 +93,19 @@ export default async function BrowsePage({
             <h2>{query ? `Results for "${query}"` : "Browse all stories"}</h2>
           </div>
 
-          <span className="home-section-label">
-            {results.length} titles
-          </span>
+          <div className="browse-result-tools">
+            <span className="home-section-label">{results.length} titles</span>
+            <form action="/browse" className="browse-sort">
+              {query && <input type="hidden" name="q" value={query} />}
+              <input type="hidden" name="type" value={selectedType} />
+              <label htmlFor="browse-sort">Sort by</label>
+              <select id="browse-sort" name="sort" defaultValue={sort}>
+                <option value="recent">Recently added</option>
+                <option value="title">Title A–Z</option>
+              </select>
+              <button type="submit">Apply</button>
+            </form>
+          </div>
         </div>
 
         <div className="browse-filters">
@@ -103,6 +115,7 @@ export default async function BrowsePage({
               href={`/browse?${new URLSearchParams({
                 ...(query ? { q: query } : {}),
                 type: item.value,
+                sort,
               }).toString()}`}
               className={
                 selectedType === item.value ? "browse-filter active" : "browse-filter"
