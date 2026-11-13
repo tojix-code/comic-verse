@@ -23,7 +23,10 @@ export function SiteFooter() {
         <div className="footer-links">
           <Link href="/browse">Browse</Link>
           <Link href="/library">My Library</Link>
-          <Link href="/about">About</Link>\n          <Link href="/contact">Contact</Link>\n          <Link href="/privacy">Privacy</Link>\n          <Link href="/terms">Terms</Link>
+          <Link href="/about">About</Link>
+          <Link href="/contact">Contact</Link>
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
         </div>
 
         <span className="footer-version">COMICVERSE · 0.3.0</span>
