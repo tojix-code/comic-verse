@@ -112,11 +112,12 @@ export async function POST(request: Request, { params }: Ctx) {
       if (typeof body.providerId !== "string" || !Array.isArray(body.chapterIds) || body.chapterIds.length < 1 || body.chapterIds.length > 500 || body.chapterIds.some((id) => typeof id !== "string")) {
         return Response.json({ success: false, message: "Select between 1 and 500 chapter records." }, { status: 400 });
       }
+      const chapterIds = body.chapterIds as string[];
       const [parent] = await db.select({ id: series.id }).from(series).where(and(eq(series.sourceKey, provider), eq(series.sourceSeriesId, body.providerId))).limit(1);
       if (!parent) return Response.json({ success: false, message: "Import the title as a draft first." }, { status: 409 });
       const feed = await upstream(`/api/manga/${encodeURIComponent(body.providerId)}/chapters?source=${provider}&lang=en&limit=500`);
       const list = Array.isArray(feed?.chapters) ? feed.chapters : Array.isArray(feed?.results) ? feed.results : [];
-      const selected = list.filter((item: any) => body.chapterIds.includes(String(item.id ?? item.hid ?? item.slug)));
+      const selected = list.filter((item: any) => chapterIds.includes(String(item.id ?? item.hid ?? item.slug)));
       const values = selected.map((item: any) => ({
         id: randomUUID(), seriesId: parent.id,
         sourceChapterId: String(item.id ?? item.hid ?? item.slug),
