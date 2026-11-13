@@ -137,7 +137,7 @@ export function AdminCatalogue({ initialSeries }: Props) {
 
   return (
     <div className="admin-catalogue">
-      <div className="admin-catalogue-intro">
+      <div className="admin-catalogue-intro" id="catalogue">
         <span className="home-kicker">CATALOGUE CONTROL</span>
         <h1>Manage ComicVerse</h1>
         <p>Create catalogue entries, add chapters and page URLs, then publish titles to Browse.</p>
