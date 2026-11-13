@@ -17,6 +17,7 @@ export function SiteHeader() {
           <Link href="/manga" className="site-nav-link">Manga</Link>
           <Link href="/browse" className="site-nav-link"><BookOpen size={15} />Browse</Link>
           <Link href="/library" className="site-nav-link"><Library size={15} />Bookmarks</Link>
+          <Link href="/profile" className="site-nav-link"><UserRound size={15} />Profile</Link>
         </nav>
         <div className="site-header-actions">
           <div className="hidden sm:block"><ApiStatus /></div>
