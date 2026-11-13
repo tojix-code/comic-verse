@@ -1313,3 +1313,43 @@ button, input { font: inherit; }
     font-size: 11px;
   }
 }
+
+/* Reader pages and synced progress */
+.reader-progress-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 13px;
+  color: #a99db6;
+  font-size: 11px;
+}
+.reader-pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid #30283a;
+  border-radius: 12px;
+  background: #0d0a12;
+}
+.reader-page-image {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+.reader-page-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  object-fit: contain;
+}
+.reader-page-image figcaption {
+  padding: 8px 12px;
+  color: #82788f;
+  background: #15111c;
+  font-size: 10px;
+}
