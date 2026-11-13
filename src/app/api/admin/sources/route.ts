@@ -49,8 +49,8 @@ export async function PATCH(request: Request) {
     const data = body as Record<string, unknown>;
     const provider = PROVIDERS.find((item) => item.sourceKey === data.sourceKey);
     if (!provider || typeof data.enabled !== "boolean") return Response.json({ success: false, message: "Invalid provider setting." }, { status: 400 });
-    if (data.enabled && provider.sourceKey !== "mangadex") {
-      return Response.json({ success: false, message: "This provider cannot be enabled until an authorized connector is configured." }, { status: 409 });
+    if (data.enabled && provider.sourceKey !== "mangadex" && !(process.env.COMICVERSE_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL)) {
+      return Response.json({ success: false, message: "Set NEXT_PUBLIC_API_BASE_URL to your running ComicVerse API (for example http://localhost:3001) and restart the Next.js server." }, { status: 409 });
     }
     const values = {
       id: randomUUID(),
