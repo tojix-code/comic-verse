@@ -31,7 +31,8 @@ export function AccountMenu() {
 
   return (
     <div className="account-actions">
-      <Link className="account-link account-library-link" href="/library"><UserRound size={15} /> Library</Link>
+      <Link className="account-link account-library-link" href="/profile"><UserRound size={15} /> Profile</Link>
+      <Link className="account-link account-library-link" href="/library"><UserRound size={15} /> My Library</Link>
       <button className="account-join" onClick={signOut} disabled={busy} type="button">
         <LogOut size={14} /> {busy ? "Signing out…" : "Sign out"}
       </button>
