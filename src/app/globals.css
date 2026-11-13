@@ -1378,3 +1378,20 @@ button, input { font: inherit; }
 .admin-denied h1 { font-size:24px; font-weight:800; }
 .admin-denied p { margin-top:10px; color:#aaa1b5; }
 @media(max-width:650px) { .admin-form { grid-template-columns:1fr; } .admin-form .admin-full { grid-column:auto; } .admin-panel { padding:18px; } }
+
+/* Provider search and admin approval queue */
+.admin-provider-search { display:grid; grid-template-columns: minmax(180px,.7fr) minmax(220px,1.3fr) auto; align-items:end; gap:14px; margin-top:18px; }
+.admin-provider-search label { display:flex; flex-direction:column; gap:8px; color:#c8bdd4; font-size:12px; }
+.admin-provider-search input,.admin-provider-search select { width:100%; min-width:0; padding:11px 12px; border:1px solid #40354c; border-radius:8px; outline:none; background:#100d15; color:white; font:inherit; }
+.admin-provider-search button,.admin-title-list button,.admin-provider-results button { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:11px 14px; border-radius:8px; background:#9333ea; color:white; font-size:11px; font-weight:750; }
+.admin-provider-search button:disabled,.admin-title-list button:disabled,.admin-provider-results button:disabled { opacity:.55; cursor:wait; }
+.admin-provider-results { display:grid; gap:12px; margin-top:20px; }
+.admin-provider-results article { display:grid; grid-template-columns:70px minmax(0,1fr) auto; align-items:center; gap:14px; padding:12px; border:1px solid #352b41; border-radius:10px; background:#100d15; }
+.admin-provider-results img,.admin-cover-empty { width:70px; height:94px; border-radius:6px; object-fit:cover; background:#282033; }
+.admin-cover-empty { display:grid; place-items:center; color:#9d91ac; font-size:10px; }
+.admin-provider-info { min-width:0; }
+.admin-provider-info strong { display:block; color:#fff; font-size:13px; }
+.admin-provider-info small { display:block; margin-top:5px; color:#a99db6; font-size:10px; }
+.admin-provider-info p { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; margin-top:7px; color:#91879d; font-size:11px; line-height:1.5; }
+.admin-title-list button { align-self:flex-start; margin-top:8px; }
+@media(max-width:700px) { .admin-provider-search { grid-template-columns:1fr; } .admin-provider-results article { grid-template-columns:55px minmax(0,1fr); } .admin-provider-results img,.admin-cover-empty { width:55px; height:76px; } .admin-provider-results button { grid-column:1/-1; justify-self:start; } }
