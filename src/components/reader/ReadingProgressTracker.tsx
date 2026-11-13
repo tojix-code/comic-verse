@@ -12,21 +12,33 @@ type ReadingProgressTrackerProps = {
   totalPages: number;
 };
 
-export function ReadingProgressTracker(props: ReadingProgressTrackerProps) {
-  const [status, setStatus] = useState<"saving" | "saved" | "signed-out" | "error">("saving");
+export function ReadingProgressTracker({
+  sourceKey,
+  sourceSeriesId,
+  sourceChapterId,
+  seriesTitle,
+  chapterLabel,
+  totalPages,
+}: ReadingProgressTrackerProps) {
+  const [status, setStatus] = useState<"restoring" | "saving" | "saved" | "signed-out" | "error">("restoring");
   const lastSaved = useRef(0);
 
   useEffect(() => {
     let active = true;
+    let observer: IntersectionObserver | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let restoreTimer: ReturnType<typeof setTimeout> | undefined;
 
     const save = async (pageNumber: number) => {
-      if (pageNumber === lastSaved.current) return;
+      if (pageNumber === lastSaved.current || !active) return;
       try {
         const response = await fetch("/api/reading-progress", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...props, pageNumber }),
+          body: JSON.stringify({
+            sourceKey, sourceSeriesId, sourceChapterId, seriesTitle,
+            chapterLabel, pageNumber, totalPages,
+          }),
         });
         if (response.status === 401) {
           if (active) setStatus("signed-out");
@@ -41,24 +53,71 @@ export function ReadingProgressTracker(props: ReadingProgressTrackerProps) {
       }
     };
 
-    const update = () => {
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const ratio = maxScroll > 0 ? window.scrollY / maxScroll : 0;
-      const page = Math.min(props.totalPages, Math.max(1, Math.ceil(ratio * props.totalPages) || 1));
+    const queueSave = (pageNumber: number) => {
       if (timer) clearTimeout(timer);
-      timer = setTimeout(() => void save(page), 700);
+      timer = setTimeout(() => void save(pageNumber), 650);
     };
 
-    void save(1);
-    window.addEventListener("scroll", update, { passive: true });
+    const startTracking = () => {
+      const pageElements = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-reader-page]")
+      );
+      if (!pageElements.length || !active) return;
+
+      observer = new IntersectionObserver((entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        const pageNumber = Number((visible.target as HTMLElement).dataset.readerPage);
+        if (Number.isInteger(pageNumber) && pageNumber >= 1 && pageNumber <= totalPages) {
+          queueSave(pageNumber);
+        }
+      }, { threshold: [0.2, 0.45, 0.7] });
+
+      pageElements.forEach((element) => observer?.observe(element));
+    };
+
+    const restore = async () => {
+      try {
+        const query = new URLSearchParams({ sourceKey, sourceSeriesId });
+        const response = await fetch(`/api/reading-progress?${query.toString()}`, { cache: "no-store" });
+        if (response.status === 401) {
+          if (active) setStatus("signed-out");
+          startTracking();
+          return;
+        }
+        const result = await response.json();
+        const savedPage = Number(result?.data?.sourceChapterId === sourceChapterId ? result.data.pageNumber : 1);
+        const pageNumber = Number.isInteger(savedPage) ? Math.min(totalPages, Math.max(1, savedPage)) : 1;
+
+        if (active && result?.success && result.data?.sourceChapterId === sourceChapterId && pageNumber > 1) {
+          setStatus("saved");
+          restoreTimer = setTimeout(() => {
+            document.querySelector<HTMLElement>(`[data-reader-page="${pageNumber}"]`)
+              ?.scrollIntoView({ behavior: "instant", block: "start" });
+            startTracking();
+          }, 120);
+        } else {
+          if (active) setStatus("saving");
+          startTracking();
+        }
+      } catch {
+        if (active) setStatus("error");
+        startTracking();
+      }
+    };
+
+    void restore();
     return () => {
       active = false;
       if (timer) clearTimeout(timer);
-      window.removeEventListener("scroll", update);
+      if (restoreTimer) clearTimeout(restoreTimer);
+      observer?.disconnect();
     };
-  }, [props]);
+  }, [sourceKey, sourceSeriesId, sourceChapterId, seriesTitle, chapterLabel, totalPages]);
 
-  const label = status === "saved" ? "Progress synced" : status === "signed-out" ? "Sign in to sync progress" : status === "error" ? "Progress not synced" : "Saving progress…";
+  const label = status === "saved" ? "Progress synced" : status === "signed-out" ? "Sign in to sync progress" : status === "error" ? "Progress sync unavailable" : status === "restoring" ? "Restoring your place…" : "Saving progress…";
   const Icon = status === "saved" ? Check : status === "error" ? CloudOff : Cloud;
 
   return <p className="reader-progress-status" role="status"><Icon size={14} /> {label}</p>;
