@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { db } from "@/db";
-import { series } from "@/db/schema";
+import { contentSource, series } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 async function requireAdmin() {
@@ -13,6 +13,8 @@ async function requireAdmin() {
 export async function GET(request: Request) {
   try {
     if (!(await requireAdmin())) return Response.json({ success: false, message: "Forbidden" }, { status: 403 });
+    const [sourceConfig] = await db.select({ enabled: contentSource.enabled }).from(contentSource).where(eq(contentSource.sourceKey, "mangadex")).limit(1);
+    if (!sourceConfig?.enabled) return Response.json({ success: false, message: "Enable MangaDex in Admin → External Sources before searching." }, { status: 409 });
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q")?.trim();
     if (!query || query.length < 2 || query.length > 100) {
@@ -66,6 +68,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     if (!(await requireAdmin())) return Response.json({ success: false, message: "Forbidden" }, { status: 403 });
+    const [sourceConfig] = await db.select({ enabled: contentSource.enabled }).from(contentSource).where(eq(contentSource.sourceKey, "mangadex")).limit(1);
+    if (!sourceConfig?.enabled) return Response.json({ success: false, message: "Enable MangaDex in Admin → External Sources before importing." }, { status: 409 });
     const body: unknown = await request.json();
     if (!body || typeof body !== "object") return Response.json({ success: false, message: "Invalid request" }, { status: 400 });
     const data = body as Record<string, unknown>;
