@@ -62,11 +62,10 @@ function normalizeChapters(rows: any[]): NormalizedChapter[] {
 }
 
 async function fetchChapterCatalogue(provider: Provider, id: string) {
-  // ComicK's upstream chapter endpoint is reliably paginated in small pages.
-  // The backend accepts larger limits but caps ComicK requests; don't assume
-  // one oversized request contains the complete catalogue.
+  // ComicK chapter requests are paginated in small pages; fetch up to 500
+  // records so admin import and sync can cover a practical catalogue batch.
   const pageSize = provider === "comick" ? 20 : 500;
-  const maxPages = provider === "comick" ? 5 : 1;
+  const maxPages = provider === "comick" ? 25 : 1;
   const collected: NormalizedChapter[] = [];
   let reportedTotal: number | null = null;
   for (let page = 1; page <= maxPages; page += 1) {
