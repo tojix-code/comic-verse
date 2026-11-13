@@ -1483,3 +1483,5 @@ button, input { font: inherit; }
 .library-history-list a { display:inline-flex; flex:none; align-items:center; gap:7px; padding:9px 11px; border:1px solid #59416d; border-radius:8px; color:#e9d5ff; font-size:11px; font-weight:700; }
 .library-history-unavailable { color:#81768d; font-size:10px; }
 @media(max-width:600px) { .library-history-list article { align-items:flex-start; flex-direction:column; } }
+
+.review-actions .review-sync { border:1px solid #59416d; background:#30213e; color:#e9d5ff; }
