@@ -148,8 +148,9 @@ export function AdminCatalogue({ initialSeries }: Props) {
       <section className="admin-panel">
         <h2><Search size={19} /> Search external catalogues</h2>
         <form onSubmit={searchProvider} className="admin-form">
-          <label className="admin-full">Search title<input value={providerQuery} onChange={(event)=>setProviderQuery(event.target.value)} minLength={2} maxLength={100} placeholder="Search MangaDex titles…" /></label>
-          <button type="submit" disabled={searchingProvider || providerQuery.trim().length<2}>{searchingProvider ? <Loader2 className="animate-spin" size={16}/> : <Search size={16}/>} Search MangaDex</button>
+          <label>Provider<select value={provider} onChange={(event)=>{setProvider(event.target.value);setProviderResults([]);setProviderDetail(null);setMessage("");}}><option value="mangadex">MangaDex</option><option value="comick">ComicK</option><option value="asura">Asura Scans</option><option value="weebcentral">WeebCentral</option></select></label>
+          <label className="admin-full">Search title<input value={providerQuery} onChange={(event)=>setProviderQuery(event.target.value)} minLength={2} maxLength={100} placeholder={`Search ${provider} titles…`} /></label>
+          <button type="submit" disabled={searchingProvider || providerQuery.trim().length<2}>{searchingProvider ? <Loader2 className="animate-spin" size={16}/> : <Search size={16}/>} Search {provider}</button>
         </form>
         {providerResults.length>0 && <div className="admin-provider-results">{providerResults.map((item)=><article key={item.id} className="admin-provider-result">
           {item.coverUrl && <img src={item.coverUrl} alt="" />}
