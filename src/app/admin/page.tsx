@@ -6,7 +6,7 @@ import { series } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { AdminCatalogue } from "@/components/admin/AdminCatalogue";
 import Link from "next/link";
-import { PlugZap } from "lucide-react";
+import { PlugZap, ClipboardCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -24,5 +24,5 @@ export default async function AdminPage() {
     published: series.published,
   }).from(series).orderBy(desc(series.createdAt)).limit(100);
 
-  return <main className="admin-page"><div className="sources-topbar"><span className="home-kicker">ADMINISTRATION</span><Link href="/admin/sources" className="source-search-link"><PlugZap size={15}/> External Sources</Link></div><AdminCatalogue initialSeries={rows} /></main>;
+  return <main className="admin-page"><div className="sources-topbar"><span className="home-kicker">ADMINISTRATION</span><div className="admin-shortcuts"><Link href="/admin/review" className="source-search-link"><ClipboardCheck size={15}/> Pending Review</Link><Link href="/admin/sources" className="source-search-link"><PlugZap size={15}/> External Sources</Link></div></div><AdminCatalogue initialSeries={rows} /></main>;
 }
