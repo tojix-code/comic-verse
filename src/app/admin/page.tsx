@@ -14,7 +14,7 @@ export default async function AdminPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
   if (session.user.role !== "admin") {
-    return <main className="admin-denied"><h1>Admin access required</h1><p>Your account does not have catalogue administration permission.</p></main>;
+    return <main id="main-content" className="admin-denied"><h1>Admin access required</h1><p>Your account does not have catalogue administration permission.</p></main>;
   }
 
   const rows = await db.select({
