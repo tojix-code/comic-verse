@@ -70,6 +70,26 @@ export async function POST(request:Request,{params}:Context) {
   const {providerId}=await params;
   try {
     const body:unknown=await request.json();
+    if (body && typeof body === "object" && (body as Record<string,unknown>).action === "sync") {
+      const [parent]=await db.select({id:series.id}).from(series).where(and(eq(series.sourceKey,"mangadex"),eq(series.sourceSeriesId,providerId))).limit(1);
+      if(!parent) return Response.json({success:false,message:"Import the MangaDex title into the catalogue first."},{status:404});
+      const synced:any[]=[];
+      for(let offset=0;offset<2000;offset+=500) {
+        const params=new URLSearchParams();
+        params.set("limit","500"); params.set("offset",String(offset)); params.set("order[chapter]","asc"); params.append("translatedLanguage[]","en");
+        const feed=await mdFetch(`/manga/${providerId}/feed?${params.toString()}`);
+        const batch=Array.isArray(feed.data)?feed.data:[];
+        synced.push(...batch);
+        if(batch.length<500 || offset+500>=Number(feed.total??0)) break;
+      }
+      const values=synced.map((item:any)=>({
+        id:randomUUID(),seriesId:parent.id,sourceChapterId:item.id,
+        chapterNumber:item.attributes?.chapter??null,title:item.attributes?.title??null,
+        publishedAt:item.attributes?.publishAt?new Date(item.attributes.publishAt):null,
+      }));
+      if(values.length) await db.insert(chapter).values(values).onConflictDoNothing();
+      return Response.json({success:true,message:`Checked ${values.length} English chapter record(s). Existing chapters were left unchanged; new records were added.`,checked:values.length});
+    }
     if(!body||typeof body!=="object") return Response.json({success:false,message:"Invalid request."},{status:400});
     const ids=(body as Record<string,unknown>).chapterIds;
     if(!Array.isArray(ids)||ids.length<1||ids.length>500||ids.some(id=>typeof id!=="string"||!/^[0-9a-f-]{36}$/i.test(id))) return Response.json({success:false,message:"Select between 1 and 500 valid chapter IDs."},{status:400});
