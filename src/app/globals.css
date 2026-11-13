@@ -1536,3 +1536,15 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 @media(max-width:1023px) { .site-header-inner { width:calc(100% - 28px); min-height:62px; } .site-nav { gap:.1rem; } .site-nav-link { padding:.45rem .5rem; font-size:.8rem; } }
 @media(max-width:760px) { .site-header-inner { flex-wrap:wrap; padding:.55rem 0; } .site-nav { order:3; width:100%; overflow-x:auto; margin:0; padding-bottom:.15rem; } .site-header-actions { margin-left:auto; } .site-nav-link { white-space:nowrap; } .home-container,.browse-page { width:calc(100% - 28px); } }
 @media(prefers-reduced-motion:reduce) { *,*:before,*:after { scroll-behavior:auto!important; transition-duration:.01ms!important; animation-duration:.01ms!important; } }
+
+/* Latest-updates cards follow the compact two-column reference layout. */
+.updates-list { display:grid; grid-template-columns:1fr; gap:.875rem; }
+.update-item { display:flex; align-items:center; gap:.875rem; min-width:0; padding:.75rem; border:1px solid var(--line); border-radius:.85rem; background:#191522; transition:border-color .18s,background .18s,transform .18s; }
+.update-item:hover { border-color:rgba(168,85,247,.55); background:#211b2d; transform:translateY(-1px); }
+.update-cover { width:4.5rem; height:6.2rem; flex:none; overflow:hidden; border-radius:.55rem; background:#211b2d; }
+.update-cover img { width:100%; height:100%; object-fit:cover; }
+.update-details { min-width:0; flex:1; }
+.update-details h3 { overflow:hidden; color:#fff; font-size:.9rem; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
+.update-details p { margin-top:.4rem; color:#c084fc; font-size:.78rem; }
+.update-arrow { flex:none; color:#a8a1b5; }
+@media(min-width:768px) { .updates-list { grid-template-columns:repeat(2,minmax(0,1fr)); } }
