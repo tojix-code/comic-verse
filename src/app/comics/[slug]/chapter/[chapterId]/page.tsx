@@ -88,7 +88,7 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
       {pages.length > 0 ? (
         <section className="reader-pages" aria-label="Chapter pages">
           {pages.map((page) => (
-            <figure className="reader-page-image" key={page.id}>
+            <figure className="reader-page-image" key={page.id} data-reader-page={page.pageNumber}>
               {/* External page images are supplied by the approved catalogue entry. */}
               <img
                 src={page.imageUrl}
