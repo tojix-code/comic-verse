@@ -20,7 +20,7 @@ function normalizeType(value: unknown): "manga" | "manhwa" | "manhua" {
   return value === "manhwa" || value === "manhua" ? value : "manga";
 }
 function backendUrl(path: string) {
-  const base = process.env.COMICVERSE_API_URL?.trim().replace(/\/$/, "");
+  const base = (process.env.COMICVERSE_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL)?.trim().replace(/\/$/, "");
   if (!base) throw new Error("COMICVERSE_API_URL is not configured on the ComicVerse web deployment.");
   return `${base}${path}`;
 }
