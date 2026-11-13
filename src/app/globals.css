@@ -1470,3 +1470,5 @@ button, input { font: inherit; }
 .review-actions a { border:1px solid #40354c; }
 .review-actions button { background:#24533d; color:#bbf7d0; font-weight:750; }
 .review-actions button:disabled { opacity:.5; }
+
+.admin-shortcuts { display:flex; flex-wrap:wrap; gap:9px; }
