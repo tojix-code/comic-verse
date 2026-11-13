@@ -1668,3 +1668,25 @@ button:disabled { cursor: not-allowed; opacity: .55; }
  .reader-nav-button,.reader-nav-disabled { justify-content:center; }
  .source-card-head { align-items:flex-start; flex-wrap:wrap; }
 }
+
+/* Auth form component polish */
+.auth-back { position:absolute; top:1.5rem; left:max(1.5rem,calc((100vw - 1180px)/2)); display:inline-flex; align-items:center; gap:.4rem; color:#c4bdce; font-size:.82rem; }
+.auth-back:hover,.auth-switch a { color:#c084fc; }
+.auth-card { position:relative; z-index:1; }
+.auth-brand { display:inline-flex; align-items:center; gap:.65rem; margin-bottom:1.3rem; color:#fff; font-size:1.15rem; font-weight:850; }
+.auth-kicker { margin-bottom:.55rem; color:#c084fc; font-size:.68rem; font-weight:850; letter-spacing:.16em; }
+.auth-subtitle { margin:.65rem 0 1.4rem; color:#a8a1b5; font-size:.9rem; line-height:1.65; }
+.auth-form { display:grid; gap:1rem; }
+.auth-form label { display:grid; gap:.45rem; color:#d9d2e2; font-size:.82rem; font-weight:650; }
+.auth-form input { min-height:46px; border:1px solid #49365e; border-radius:.7rem; background:#100e16; color:#fff; padding:.75rem .85rem; }
+.auth-form input:focus { outline:none; border-color:#a855f7; box-shadow:0 0 0 3px #9333ea30; }
+.auth-form label small { color:#8f879d; font-size:.72rem; font-weight:400; }
+.auth-submit { display:flex; align-items:center; justify-content:center; gap:.5rem; min-height:46px; margin-top:.2rem; border:1px solid #a855f7; border-radius:.7rem; background:linear-gradient(120deg,#9333ea,#7e22ce); color:white; font-weight:800; }
+.auth-submit:disabled { opacity:.6; cursor:wait; }
+.auth-error { padding:.7rem .8rem; border:1px solid #7f1d1d; border-radius:.65rem; background:#450a0a55; color:#fecaca; font-size:.8rem; }
+.auth-switch { margin-top:1.2rem; color:#c4bdce; font-size:.82rem; text-align:center; }
+.auth-switch a { font-weight:750; }
+.auth-note { margin-top:1.2rem; padding-top:1rem; border-top:1px solid #322a42; color:#82798f; font-size:.72rem; text-align:center; }
+.auth-glow { position:absolute; width:260px; height:260px; border-radius:50%; filter:blur(90px); pointer-events:none; }
+.auth-glow-one { top:10%; left:15%; background:#9333ea25; }
+.auth-glow-two { right:10%; bottom:5%; background:#c084fc18; }
