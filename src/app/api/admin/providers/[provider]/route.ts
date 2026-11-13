@@ -117,7 +117,7 @@ export async function GET(request: Request, { params }: Ctx) {
           authors: Array.isArray(raw.authors) ? raw.authors.map(String) : [],
           artists: Array.isArray(raw.artists) ? raw.artists.map(String) : [],
           genres: Array.isArray(raw.genres) ? raw.genres.map((g: any) => typeof g === "string" ? g : g?.name).filter(Boolean) : [],
-          sourceUrl: typeof raw.sourceUrl === "string" ? raw.sourceUrl : null,
+          sourceUrl: typeof raw.sourceUrl === "string" ? raw.sourceUrl : provider === "comick" ? `https://comick.io/comic/${encodeURIComponent(id)}` : provider === "asura" ? `https://asuracomic.net/${id.split("/").map(encodeURIComponent).join("/")}` : `https://weebcentral.com/${id.split("/").map(encodeURIComponent).join("/")}`,
         },
         chapters,
         chapterCount: feed.total,
