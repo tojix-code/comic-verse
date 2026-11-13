@@ -172,8 +172,8 @@ export default function LibraryPage() {
 
           <div>
             <BookOpen size={19} />
-            <span>{history.filter((item) => item.updatedAt && Date.now() - new Date(item.updatedAt).getTime() < 7 * 24 * 60 * 60 * 1000).length}</span>
-            <p>Active this week</p>
+            <span>{history.length}</span>
+            <p>Recently read</p>
           </div>
 
           <div>
