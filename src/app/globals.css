@@ -1432,3 +1432,26 @@ button, input { font: inherit; }
 .sources-footnote svg { flex:none; margin-top:2px; color:#c084fc; }
 .sources-footnote p { font-size:11px; line-height:1.7; }
 @media(max-width:720px) { .sources-grid { grid-template-columns:1fr; } .sources-summary { grid-template-columns:1fr; } }
+
+.admin-provider-results { display:grid; gap:12px; margin-top:18px; }
+.admin-provider-result { display:flex; align-items:flex-start; gap:13px; padding:13px; border:1px solid #382f43; border-radius:10px; background:#17131d; }
+.admin-provider-result>img { width:58px; height:78px; object-fit:cover; border-radius:6px; }
+.admin-provider-result-copy { min-width:0; flex:1; }
+.admin-provider-result-copy h3 { font-size:14px; font-weight:750; }
+.admin-provider-result-copy p { margin-top:4px; color:#a99db6; font-size:11px; line-height:1.5; }
+.admin-provider-actions { display:flex; flex-wrap:wrap; gap:7px; }
+.admin-provider-actions button,.admin-provider-detail>button { padding:8px 10px; border:1px solid #59416d; border-radius:7px; background:#30213e; color:#e9d5ff; font-size:11px; font-weight:700; }
+.admin-provider-detail { display:grid; gap:13px; margin-top:17px; padding:16px; border:1px solid #59416d; border-radius:11px; background:#1b1523; }
+.admin-provider-detail>p { color:#b9adc7; font-size:12px; line-height:1.65; }
+.admin-provider-detail-head { display:flex; gap:13px; align-items:flex-start; }
+.admin-provider-detail-head>img { width:75px; height:105px; object-fit:cover; border-radius:7px; }
+.admin-provider-detail-head h3 { font-size:16px; font-weight:800; }
+.admin-provider-detail-head p,.admin-provider-detail-head a { display:block; margin-top:5px; color:#b9adc7; font-size:11px; }
+.admin-provider-detail-head a { color:#c084fc; text-decoration:underline; }
+.admin-provider-chapter-list { display:grid; max-height:360px; overflow:auto; border:1px solid #382f43; border-radius:8px; }
+.admin-provider-chapter-list label { display:flex; align-items:center; gap:9px; padding:9px 11px; border-bottom:1px solid #30283a; color:#e9e2ef; font-size:11px; }
+.admin-provider-chapter-list label:last-child { border-bottom:0; }
+.admin-provider-chapter-list input { accent-color:#a855f7; }
+.admin-provider-chapter-list span { flex:1; }
+.admin-provider-chapter-list small { color:#a99db6; }
+@media(max-width:680px) { .admin-provider-result { flex-wrap:wrap; } .admin-provider-actions { width:100%; } }
