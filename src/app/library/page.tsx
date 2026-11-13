@@ -13,6 +13,7 @@ import {
   Trash2,
   Search,
   RefreshCw,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
@@ -40,6 +41,9 @@ export default function LibraryPage() {
   const [error, setError] = useState("");
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState<"recent" | "oldest" | "title">("recent");
+  const [historySearch, setHistorySearch] = useState("");
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -123,9 +127,18 @@ export default function LibraryPage() {
     }
   }
 
-  const filteredEntries = entries.filter((entry) =>
-    entry.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const contentTypes = Array.from(new Set(entries.map((entry) => entry.contentType)));
+  const filteredEntries = entries
+    .filter((entry) => entry.title.toLowerCase().includes(search.trim().toLowerCase()))
+    .filter((entry) => typeFilter === "all" || entry.contentType === typeFilter)
+    .sort((a, b) => sortOrder === "title"
+      ? a.title.localeCompare(b.title)
+      : sortOrder === "oldest"
+        ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const filteredHistory = history.filter((item) => item.seriesTitle.toLowerCase().includes(historySearch.trim().toLowerCase()));
+  const comicCount = entries.filter((entry) => !["novel", "light-novel"].includes(entry.contentType)).length;
+  const novelCount = entries.length - comicCount;
 
   if (isPending || !session) {
     return (
@@ -172,14 +185,14 @@ export default function LibraryPage() {
 
           <div>
             <BookOpen size={19} />
-            <span>{history.length}</span>
-            <p>Recently read</p>
+            <span>{comicCount}</span>
+            <p>Comics & manga</p>
           </div>
 
           <div>
             <Clock3 size={19} />
-            <span>{history.length}</span>
-            <p>Reading history</p>
+            <span>{novelCount}</span>
+            <p>Novels</p>
           </div>
         </div>
 
