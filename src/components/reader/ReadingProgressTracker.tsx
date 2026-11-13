@@ -80,7 +80,7 @@ export function ReadingProgressTracker({
 
     const restore = async () => {
       try {
-        const query = new URLSearchParams({ sourceKey, sourceSeriesId });
+        const query = new URLSearchParams({ sourceKey, sourceSeriesId, sourceChapterId });
         const response = await fetch(`/api/reading-progress?${query.toString()}`, { cache: "no-store" });
         if (response.status === 401) {
           if (active) setStatus("signed-out");
