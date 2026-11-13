@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PanelsTopLeft, Compass, BookOpen, Library, Search } from "lucide-react";
+import { PanelsTopLeft, Compass, BookOpen, Library, Search, UserRound } from "lucide-react";
 import { ApiStatus } from "@/components/api-status";
 import { AccountMenu } from "@/components/account-menu";
 
