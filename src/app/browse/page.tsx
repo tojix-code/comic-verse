@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike } from "drizzle-orm";
+import { and, asc, desc, eq, ilike } from "drizzle-orm";
 import { Search, Compass } from "lucide-react";
 import { db } from "@/db";
 import { series } from "@/db/schema";
@@ -50,7 +50,7 @@ export default async function BrowsePage({
     .select()
     .from(series)
     .where(and(...conditions))
-    .orderBy(sort === "title" ? series.title : desc(series.createdAt))
+    .orderBy(sort === "title" ? asc(series.title) : desc(series.createdAt))
     .limit(60)
     .catch((error) => {
       console.error("[browse-catalogue] Database unavailable:", error);
@@ -58,7 +58,7 @@ export default async function BrowsePage({
     });
 
   return (
-    <main className="browse-page">
+    <main id="main-content" className="browse-page">
       <section className="browse-hero">
         <span className="home-kicker">
           <Compass size={14} /> EXPLORE THE CATALOGUE
