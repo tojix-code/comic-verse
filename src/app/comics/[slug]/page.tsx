@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { LibraryButton } from "@/components/home/LibraryButton";
+import { ChapterList } from "@/components/details/ChapterList";
 
 export const dynamic = "force-dynamic";
 
@@ -121,47 +122,13 @@ export default async function ComicDetailsPage({
 
       <section className="details-chapters">
         <div className="details-chapter-heading">
-          <div>
-            <span className="home-kicker">CONTINUE YOUR JOURNEY</span>
-            <h2>Chapters</h2>
-          </div>
-
+          <div><span className="home-kicker">CONTINUE YOUR JOURNEY</span><h2>Chapters</h2></div>
           <span>{chapters.length} chapters</span>
         </div>
-
         {chapters.length === 0 ? (
-          <div className="home-empty">
-            <BookOpen size={25} />
-            <h3>No chapters available</h3>
-            <p>Chapters will appear here when they are added.</p>
-          </div>
+          <div className="home-empty"><BookOpen size={25}/><h3>No chapters available</h3><p>Chapters will appear here when they are added.</p></div>
         ) : (
-          <div className="details-chapter-list">
-            {chapters.map((item) => (
-              <Link
-                key={item.id}
-                href={`/comics/${comic.slug}/chapter/${item.id}`}
-                className="details-chapter-item"
-              >
-                <div>
-                  <h3>
-                    {item.title ||
-                      (item.chapterNumber
-                        ? `Chapter ${item.chapterNumber}`
-                        : "Untitled Chapter")}
-                  </h3>
-
-                  {item.publishedAt && (
-                    <p>
-                      {new Date(item.publishedAt).toLocaleDateString("en-IN")}
-                    </p>
-                  )}
-                </div>
-
-                <ArrowRight size={18} />
-              </Link>
-            ))}
-          </div>
+          <ChapterList chapters={chapters.map((item) => ({ id: item.id, title: item.title, chapterNumber: item.chapterNumber, publishedAt: item.publishedAt?.toISOString() ?? null }))} hrefBase={`/comics/${comic.slug}/chapter`} />
         )}
       </section>
     </main>
