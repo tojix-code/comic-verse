@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { db } from "@/db";
 import { chapter, contentSource, series } from "@/db/schema";
