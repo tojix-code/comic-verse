@@ -58,7 +58,7 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
       : "Untitled Chapter");
 
   return (
-    <main className="reader-page">
+    <main id="main-content" className="reader-page">
       <div className="reader-topbar">
         <Link href={`/comics/${comic.slug}`} className="reader-back">
           <ArrowLeft size={17} />
