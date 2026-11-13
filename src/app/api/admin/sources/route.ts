@@ -31,7 +31,7 @@ export async function GET() {
         approved: saved?.approved ?? false,
         accessMode: saved?.accessMode ?? provider.accessMode,
         notes: saved?.notes ?? provider.notes,
-        configured: provider.sourceKey === "mangadex" || (!!process.env.COMICVERSE_API_URL && ["comick", "asura", "weebcentral"].includes(provider.sourceKey)),
+        configured: provider.sourceKey === "mangadex" || (!!(process.env.COMICVERSE_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL) && ["comick", "asura", "weebcentral"].includes(provider.sourceKey)),
       };
     });
     return Response.json({ success: true, sources });
