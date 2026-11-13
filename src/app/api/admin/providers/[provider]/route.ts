@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { db } from "@/db";
-import { contentSource, series } from "@/db/schema";
+import { chapter, contentSource, series } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 const PROVIDERS = ["comick", "weebcentral", "asura"] as const;
@@ -108,6 +108,25 @@ export async function POST(request: Request, { params }: Ctx) {
   if (!setting?.enabled) return Response.json({ success: false, message: "Enable this provider before importing." }, { status: 409 });
   try {
     const body = await request.json() as Record<string, unknown>;
+    if (body.action === "import-chapters") {
+      if (typeof body.providerId !== "string" || !Array.isArray(body.chapterIds) || body.chapterIds.length < 1 || body.chapterIds.length > 500 || body.chapterIds.some((id) => typeof id !== "string")) {
+        return Response.json({ success: false, message: "Select between 1 and 500 chapter records." }, { status: 400 });
+      }
+      const [parent] = await db.select({ id: series.id }).from(series).where(and(eq(series.sourceKey, provider), eq(series.sourceSeriesId, body.providerId))).limit(1);
+      if (!parent) return Response.json({ success: false, message: "Import the title as a draft first." }, { status: 409 });
+      const feed = await upstream(`/api/manga/${encodeURIComponent(body.providerId)}/chapters?source=${provider}&lang=en&limit=500`);
+      const list = Array.isArray(feed?.chapters) ? feed.chapters : Array.isArray(feed?.results) ? feed.results : [];
+      const selected = list.filter((item: any) => body.chapterIds.includes(String(item.id ?? item.hid ?? item.slug)));
+      const values = selected.map((item: any) => ({
+        id: randomUUID(), seriesId: parent.id,
+        sourceChapterId: String(item.id ?? item.hid ?? item.slug),
+        chapterNumber: textValue(item.number ?? item.chapter ?? item.chap, 32) || null,
+        title: textValue(item.title, 300) || null,
+        publishedAt: item.publishedAt || item.date ? new Date(item.publishedAt ?? item.date) : null,
+      })).filter((item: any) => item.sourceChapterId);
+      if (values.length) await db.insert(chapter).values(values).onConflictDoNothing();
+      return Response.json({ success: true, message: `Imported ${values.length} chapter metadata record(s). Page content is not copied.`, imported: values.length });
+    }
     if (typeof body.providerId !== "string" || !body.providerId.trim() || typeof body.title !== "string" || !body.title.trim()) {
       return Response.json({ success: false, message: "Invalid provider title." }, { status: 400 });
     }
