@@ -1472,3 +1472,14 @@ button, input { font: inherit; }
 .review-actions button:disabled { opacity:.5; }
 
 .admin-shortcuts { display:flex; flex-wrap:wrap; gap:9px; }
+
+.library-reading-history { margin:34px 0 42px; }
+.library-history-list { display:grid; gap:10px; }
+.library-history-list article { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:15px 17px; border:1px solid #30283a; border-radius:11px; background:#19151f; }
+.library-history-list h3 { color:#f5efff; font-size:13px; font-weight:750; }
+.library-history-list p { margin-top:5px; color:#a99db6; font-size:11px; }
+.library-progress-track { width:min(320px,55vw); height:4px; margin-top:10px; overflow:hidden; border-radius:8px; background:#332b3c; }
+.library-progress-track span { display:block; height:100%; border-radius:8px; background:#a855f7; }
+.library-history-list a { display:inline-flex; flex:none; align-items:center; gap:7px; padding:9px 11px; border:1px solid #59416d; border-radius:8px; color:#e9d5ff; font-size:11px; font-weight:700; }
+.library-history-unavailable { color:#81768d; font-size:10px; }
+@media(max-width:600px) { .library-history-list article { align-items:flex-start; flex-direction:column; } }
