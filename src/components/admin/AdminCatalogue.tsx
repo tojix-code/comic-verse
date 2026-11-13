@@ -25,7 +25,7 @@ export function AdminCatalogue({ initialSeries }: Props) {
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || "Request failed.");
-      setMessage(result.message);
+      setMessage(result.data?.id ? `${result.message} ID: ${result.data.id}` : result.message);
       form.reset();
       if (action === "create-series") window.location.reload();
       if (action === "set-published") {
