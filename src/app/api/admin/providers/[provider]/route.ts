@@ -33,6 +33,55 @@ async function upstream(path: string) {
   }
   return response.json();
 }
+
+type NormalizedChapter = { id: string; number: string | null; title: string | null; publishedAt: string | null; pages: number | null };
+
+function chapterRows(payload: any): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.chapters)) return payload.chapters;
+  if (Array.isArray(payload?.results)) return payload.results;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data?.chapters)) return payload.data.chapters;
+  return [];
+}
+
+function normalizeChapters(rows: any[]): NormalizedChapter[] {
+  return rows.map((item: any) => {
+    const id = item.hid ?? item.id ?? item.slug ?? item.chapterId ?? item.chapter_id;
+    const number = item.chap ?? item.chapter ?? item.number ?? item.chapterNumber ?? item.chapter_number;
+    const publishedAt = item.created_at ?? item.publish_at ?? item.publishedAt ?? item.date ?? null;
+    const pageCount = item.page_count ?? item.pageCount ?? item.pages;
+    return {
+      id: String(id ?? ""),
+      number: number === undefined || number === null || number === "" ? null : String(number),
+      title: textValue(item.title ?? item.name, 300) || null,
+      publishedAt: typeof publishedAt === "string" ? publishedAt : null,
+      pages: Number.isInteger(pageCount) ? pageCount : null,
+    };
+  }).filter((item) => item.id);
+}
+
+async function fetchChapterCatalogue(provider: Provider, id: string) {
+  // ComicK's upstream chapter endpoint is reliably paginated in small pages.
+  // The backend accepts larger limits but caps ComicK requests; don't assume
+  // one oversized request contains the complete catalogue.
+  const pageSize = provider === "comick" ? 20 : 500;
+  const maxPages = provider === "comick" ? 5 : 1;
+  const collected: NormalizedChapter[] = [];
+  let reportedTotal: number | null = null;
+  for (let page = 1; page <= maxPages; page += 1) {
+    const payload = await upstream(`/api/manga/${encodeURIComponent(id)}/chapters?source=${provider}&lang=en&page=${page}&limit=${pageSize}`);
+    const rows = chapterRows(payload);
+    const normalized = normalizeChapters(rows);
+    collected.push(...normalized);
+    const total = Number(payload?.total ?? payload?.totalChapters ?? payload?.pagination?.total);
+    if (Number.isFinite(total) && total >= 0) reportedTotal = total;
+    if (rows.length < pageSize || (reportedTotal !== null && collected.length >= reportedTotal)) break;
+  }
+  const unique = [...new Map(collected.map((item) => [item.id, item])).values()];
+  return { chapters: unique, total: reportedTotal ?? unique.length, hasMore: reportedTotal !== null ? unique.length < reportedTotal : unique.length >= pageSize * maxPages };
+}
+
 function enabled(provider: Provider) {
   return db.select({ enabled: contentSource.enabled }).from(contentSource).where(eq(contentSource.sourceKey, provider)).limit(1);
 }
@@ -52,10 +101,10 @@ export async function GET(request: Request, { params }: Ctx) {
     if (id) {
       const [detail, feed] = await Promise.all([
         upstream(`/api/manga/${encodeURIComponent(id)}?source=${provider}`),
-        upstream(`/api/manga/${encodeURIComponent(id)}/chapters?source=${provider}&lang=en&limit=500`),
+        fetchChapterCatalogue(provider, id),
       ]);
-      const raw = detail as Record<string, any>;
-      const chapters = Array.isArray(feed?.chapters) ? feed.chapters : Array.isArray(feed?.results) ? feed.results : [];
+      const raw = (detail?.data ?? detail?.manga ?? detail?.comic ?? detail) as Record<string, any>;
+      const chapters = feed.chapters;
       const title = textValue(raw.title ?? raw.name ?? raw.comic?.title, 300) || id;
       const coverUrl = raw.coverUrl ?? raw.cover ?? raw.thumbnail ?? raw.image ?? null;
       return Response.json({
@@ -70,14 +119,9 @@ export async function GET(request: Request, { params }: Ctx) {
           genres: Array.isArray(raw.genres) ? raw.genres.map((g: any) => typeof g === "string" ? g : g?.name).filter(Boolean) : [],
           sourceUrl: typeof raw.sourceUrl === "string" ? raw.sourceUrl : null,
         },
-        chapters: chapters.map((item: any) => ({
-          id: String(item.id ?? item.hid ?? item.slug ?? ""),
-          number: String(item.number ?? item.chapter ?? item.chap ?? "") || null,
-          title: textValue(item.title, 300) || null,
-          publishedAt: item.publishedAt ?? item.date ?? null,
-          pages: Number.isInteger(item.pages) ? item.pages : null,
-        })).filter((item: any) => item.id),
-        chapterCount: chapters.length,
+        chapters,
+        chapterCount: feed.total,
+        chapterHasMore: feed.hasMore,
       });
     }
     if (!query || query.length < 2 || query.length > 100) return Response.json({ success: false, message: "Enter a title search between 2 and 100 characters." }, { status: 400 });
@@ -115,16 +159,15 @@ export async function POST(request: Request, { params }: Ctx) {
       const chapterIds = body.chapterIds as string[];
       const [parent] = await db.select({ id: series.id }).from(series).where(and(eq(series.sourceKey, provider), eq(series.sourceSeriesId, body.providerId))).limit(1);
       if (!parent) return Response.json({ success: false, message: "Import the title as a draft first." }, { status: 409 });
-      const feed = await upstream(`/api/manga/${encodeURIComponent(body.providerId)}/chapters?source=${provider}&lang=en&limit=500`);
-      const list = Array.isArray(feed?.chapters) ? feed.chapters : Array.isArray(feed?.results) ? feed.results : [];
-      const selected = list.filter((item: any) => chapterIds.includes(String(item.id ?? item.hid ?? item.slug)));
-      const values = selected.map((item: any) => ({
+      const feed = await fetchChapterCatalogue(provider, body.providerId);
+      const selected = feed.chapters.filter((item) => chapterIds.includes(item.id));
+      const values = selected.map((item) => ({
         id: randomUUID(), seriesId: parent.id,
-        sourceChapterId: String(item.id ?? item.hid ?? item.slug),
-        chapterNumber: textValue(item.number ?? item.chapter ?? item.chap, 32) || null,
-        title: textValue(item.title, 300) || null,
-        publishedAt: item.publishedAt || item.date ? new Date(item.publishedAt ?? item.date) : null,
-      })).filter((item: any) => item.sourceChapterId);
+        sourceChapterId: item.id,
+        chapterNumber: textValue(item.number, 32),
+        title: item.title,
+        publishedAt: item.publishedAt && !Number.isNaN(Date.parse(item.publishedAt)) ? new Date(item.publishedAt) : null,
+      }));
       if (values.length) await db.insert(chapter).values(values).onConflictDoNothing();
       return Response.json({ success: true, message: `Imported ${values.length} chapter metadata record(s). Page content is not copied.`, imported: values.length });
     }
