@@ -7,7 +7,7 @@ type SeriesOption = { id: string; title: string; slug: string; published: boolea
 type ProviderTitle = { id: string; title: string; synopsis: string; coverUrl: string | null; contentType: string; status: string | null; year: number | null; tags: string[] };
 type Props = { initialSeries: SeriesOption[] };
 type ProviderChapter = { id: string; number: string | null; title: string | null; publishedAt: string | null; pages: number | null };
-type ProviderDetail = { title: { id: string; title: string; synopsis: string; coverUrl: string | null; status: string | null; year: number | null; contentType: string; authors: string[]; artists: string[]; genres: string[]; sourceUrl: string }; chapters: ProviderChapter[]; chapterCount: number };
+type ProviderDetail = { title: { id: string; title: string; synopsis: string; coverUrl: string | null; status: string | null; year: number | null; contentType: string; authors: string[]; artists: string[]; genres: string[]; sourceUrl: string | null }; chapters: ProviderChapter[]; chapterCount: number };
 
 export function AdminCatalogue({ initialSeries }: Props) {
   const [titles, setTitles] = useState(initialSeries);
@@ -24,12 +24,12 @@ export function AdminCatalogue({ initialSeries }: Props) {
 
   async function searchProvider(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (provider !== "mangadex" || providerQuery.trim().length < 2) return;
+    if (providerQuery.trim().length < 2) return;
     setSearchingProvider(true);
     setMessage("");
     setProviderResults([]);
     try {
-      const response = await fetch(`/api/admin/providers/mangadex?q=${encodeURIComponent(providerQuery.trim())}`);
+      const response = await fetch(provider === "mangadex" ? `/api/admin/providers/mangadex?q=${encodeURIComponent(providerQuery.trim())}` : `/api/admin/providers/${provider}?q=${encodeURIComponent(providerQuery.trim())}`);
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || "Provider search failed.");
       setProviderResults(result.results);
@@ -43,7 +43,7 @@ export function AdminCatalogue({ initialSeries }: Props) {
   async function inspectProviderTitle(item: ProviderTitle) {
     setLoadingDetail(true); setProviderDetail(null); setSelectedChapterIds([]); setMessage("");
     try {
-      const response = await fetch(`/api/admin/providers/mangadex/${encodeURIComponent(item.id)}`);
+      const response = await fetch(provider === "mangadex" ? `/api/admin/providers/mangadex/${encodeURIComponent(item.id)}` : `/api/admin/providers/${provider}?id=${encodeURIComponent(item.id)}`);
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || "Could not load title details.");
       setProviderDetail(result);
@@ -69,10 +69,10 @@ export function AdminCatalogue({ initialSeries }: Props) {
     setBusy(true);
     setMessage("");
     try {
-      const response = await fetch("/api/admin/providers/mangadex", {
+      const response = await fetch(provider === "mangadex" ? "/api/admin/providers/mangadex" : `/api/admin/providers/${provider}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider: "mangadex", providerId: item.id, title: item.title, synopsis: item.synopsis, coverUrl: item.coverUrl, contentType: item.contentType, status: item.status, year: item.year }),
+        body: JSON.stringify({ provider, providerId: item.id, title: item.title, synopsis: item.synopsis, coverUrl: item.coverUrl, contentType: item.contentType, status: item.status, year: item.year }),
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || "Import failed.");
@@ -146,7 +146,7 @@ export function AdminCatalogue({ initialSeries }: Props) {
       {message && <p className="admin-feedback" role="status">{message}</p>}
 
       <section className="admin-panel">
-        <h2><Search size={19} /> Search MangaDex catalogue</h2>
+        <h2><Search size={19} /> Search external catalogues</h2>
         <form onSubmit={searchProvider} className="admin-form">
           <label className="admin-full">Search title<input value={providerQuery} onChange={(event)=>setProviderQuery(event.target.value)} minLength={2} maxLength={100} placeholder="Search MangaDex titles…" /></label>
           <button type="submit" disabled={searchingProvider || providerQuery.trim().length<2}>{searchingProvider ? <Loader2 className="animate-spin" size={16}/> : <Search size={16}/>} Search MangaDex</button>
@@ -158,7 +158,7 @@ export function AdminCatalogue({ initialSeries }: Props) {
         </article>)}</div>}
         {loadingDetail && <p className="admin-note">Loading title and chapter metadata…</p>}
         {providerDetail && <div className="admin-provider-detail">
-          <div className="admin-provider-detail-head">{providerDetail.title.coverUrl && <img src={providerDetail.title.coverUrl} alt=""/>}<div><h3>{providerDetail.title.title}</h3><p>{providerDetail.title.contentType} · {providerDetail.title.status || "Status unknown"} · {providerDetail.title.year || "Year unknown"}</p><p>Authors: {providerDetail.title.authors.join(", ") || "Unknown"} · Artists: {providerDetail.title.artists.join(", ") || "Unknown"}</p><a href={providerDetail.title.sourceUrl} target="_blank" rel="noreferrer">Open MangaDex title ↗</a></div></div>
+          <div className="admin-provider-detail-head">{providerDetail.title.coverUrl && <img src={providerDetail.title.coverUrl} alt=""/>}<div><h3>{providerDetail.title.title}</h3><p>{providerDetail.title.contentType} · {providerDetail.title.status || "Status unknown"} · {providerDetail.title.year || "Year unknown"}</p><p>Authors: {providerDetail.title.authors.join(", ") || "Unknown"} · Artists: {providerDetail.title.artists.join(", ") || "Unknown"}</p>{providerDetail.title.sourceUrl && <a href={providerDetail.title.sourceUrl} target="_blank" rel="noreferrer">Open source title ↗</a>}</div></div>
           <p>{providerDetail.title.synopsis || "No synopsis available."}</p><p className="admin-note">{providerDetail.chapterCount} English chapter records available. Import the title as a draft first, then import selected chapter metadata.</p>
           <div className="admin-provider-chapter-list">{providerDetail.chapters.map((item)=><label key={item.id}><input type="checkbox" checked={selectedChapterIds.includes(item.id)} onChange={(event)=>setSelectedChapterIds((current)=>event.target.checked?[...current,item.id]:current.filter((id)=>id!==item.id))}/><span>Chapter {item.number || "Special"}{item.title ? ` · ${item.title}` : ""}</span><small>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString("en-IN") : "Date unavailable"}</small></label>)}</div>
           <button type="button" disabled={importingChapters || selectedChapterIds.length===0} onClick={()=>void importSelectedChapters()}>{importingChapters ? "Importing…" : `Import ${selectedChapterIds.length} selected chapter(s)`}</button>
