@@ -12,7 +12,8 @@ export function ReviewQueue({initialItems}:{initialItems:Item[]}) {
   async function syncChapters(item:Item) {
     setBusy(item.id);setMessage("");
     try {
-      const endpoint=item.sourceKey==="mangadex"?`/api/admin/providers/mangadex/${encodeURIComponent(item.sourceSeriesId)}`:`/api/admin/providers/${encodeURIComponent(item.sourceKey)}`;\n      const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(item.sourceKey==="mangadex"?{action:"sync"}:{action:"sync",providerId:item.sourceSeriesId})});
+      const endpoint=item.sourceKey==="mangadex"?`/api/admin/providers/mangadex/${encodeURIComponent(item.sourceSeriesId)}`:`/api/admin/providers/${encodeURIComponent(item.sourceKey)}`;
+      const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(item.sourceKey==="mangadex"?{action:"sync"}:{action:"sync",providerId:item.sourceSeriesId})});
       const result=await response.json();
       if(!response.ok||!result.success) throw new Error(result.message||"Chapter sync failed.");
       setMessage(result.message);
