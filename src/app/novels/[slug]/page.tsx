@@ -17,7 +17,7 @@ export default async function NovelDetailsPage({ params }: { params: Promise<{ s
   const chapters = await db.select().from(chapter).where(eq(chapter.seriesId, novel.id)).orderBy(desc(chapter.createdAt));
   const firstChapter = chapters[chapters.length - 1];
 
-  return <main className="details-page">
+  return <main id="main-content" className="details-page">
     <section className="details-hero">
       <div className="details-cover">{novel.coverUrl ? <img src={novel.coverUrl} alt={novel.title}/> : <div className="comic-cover-placeholder"><BookOpen size={45}/><span>ComicVerse</span></div>}</div>
       <div className="details-information">
