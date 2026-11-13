@@ -55,7 +55,7 @@ export default async function NovelsPage({
   ];
 
   return (
-    <main className="browse-page">
+    <main id="main-content" className="browse-page">
       <section className="browse-hero">
         <span className="home-kicker">
           <BookOpen size={14} /> THE WRITTEN COLLECTION

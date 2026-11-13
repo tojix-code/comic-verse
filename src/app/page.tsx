@@ -14,7 +14,7 @@ export default async function Home() {
     await getHomepageData();
 
   return (
-    <main className="min-h-screen overflow-hidden">
+    <main id="main-content" className="min-h-screen overflow-hidden">
       <div className="home-ambient home-ambient-one" />
       <div className="home-ambient home-ambient-two" />
 

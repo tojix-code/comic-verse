@@ -13,9 +13,12 @@ import {
   Trash2,
   Search,
   RefreshCw,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
+
+type ReadingItem = { id:string; seriesTitle:string; chapterLabel:string|null; pageNumber:number; totalPages:number|null; updatedAt:string; slug:string|null; contentType:string|null; chapterId:string|null };
 
 type LibraryEntry = {
   id: string;
@@ -33,10 +36,14 @@ export default function LibraryPage() {
   const { data: session, isPending } = authClient.useSession();
 
   const [entries, setEntries] = useState<LibraryEntry[]>([]);
+  const [history, setHistory] = useState<ReadingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState<"recent" | "oldest" | "title">("recent");
+  const [historySearch, setHistorySearch] = useState("");
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -62,11 +69,18 @@ export default function LibraryPage() {
 
       setEntries(result.data || []);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Something went wrong"
-      );
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
+    }
+
+    // Reading history is optional: a history API failure must not hide saved titles.
+    try {
+      const progressResponse = await fetch("/api/reading-progress", { cache: "no-store" });
+      const progressResult = await progressResponse.json();
+      if (progressResponse.ok && progressResult.success) setHistory(progressResult.data || []);
+    } catch {
+      setHistory([]);
     }
   }, []);
 
@@ -113,13 +127,22 @@ export default function LibraryPage() {
     }
   }
 
-  const filteredEntries = entries.filter((entry) =>
-    entry.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const contentTypes = Array.from(new Set(entries.map((entry) => entry.contentType)));
+  const filteredEntries = entries
+    .filter((entry) => entry.title.toLowerCase().includes(search.trim().toLowerCase()))
+    .filter((entry) => typeFilter === "all" || entry.contentType === typeFilter)
+    .sort((a, b) => sortOrder === "title"
+      ? a.title.localeCompare(b.title)
+      : sortOrder === "oldest"
+        ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const filteredHistory = history.filter((item) => item.seriesTitle.toLowerCase().includes(historySearch.trim().toLowerCase()));
+  const comicCount = entries.filter((entry) => !["novel", "light-novel"].includes(entry.contentType)).length;
+  const novelCount = entries.length - comicCount;
 
   if (isPending || !session) {
     return (
-      <main className="library-loading" aria-live="polite">
+      <main id="main-content" className="library-loading" aria-live="polite">
         Loading your library…
       </main>
     );
@@ -162,16 +185,36 @@ export default function LibraryPage() {
 
           <div>
             <BookOpen size={19} />
-            <span>—</span>
-            <p>Reading now</p>
+            <span>{comicCount}</span>
+            <p>Comics & manga</p>
           </div>
 
           <div>
             <Clock3 size={19} />
-            <span>—</span>
-            <p>Reading history</p>
+            <span>{novelCount}</span>
+            <p>Novels</p>
           </div>
         </div>
+
+        {history.length > 0 && (
+          <section className="library-reading-history">
+            <div className="library-section-header"><div><h2>Continue reading</h2><p>{history.length} saved reading positions, most recent first.</p></div></div>
+            {history.length > 3 && <label className="library-history-search"><Search size={15}/><input type="search" placeholder="Find reading history..." value={historySearch} onChange={(event) => setHistorySearch(event.target.value)}/></label>}
+            <div className="library-history-list">
+              {filteredHistory.slice(0,10).map((item) => {
+                const isNovel = item.contentType === "novel" || item.contentType === "light-novel";
+                const base = isNovel ? "/novels" : "/comics";
+                const href = item.slug && item.chapterId ? `${base}/${item.slug}/chapter/${item.chapterId}` : item.slug ? `${base}/${item.slug}` : "#";
+                const progress = item.totalPages ? Math.min(100, Math.round(item.pageNumber / item.totalPages * 100)) : 0;
+                return <article key={item.id}>
+                  <div><h3>{item.seriesTitle}</h3><p>{item.chapterLabel || "Reading"} · Page {item.pageNumber}{item.totalPages ? ` of ${item.totalPages}` : ""}</p><div className="library-progress-track"><span style={{width:`${progress}%`}}/></div></div>
+                  {href !== "#" ? <Link href={href}>Resume reading <BookOpen size={14}/></Link> : <span className="library-history-unavailable">Chapter unavailable</span>}
+                </article>;
+              })}
+              {filteredHistory.length === 0 && <p className="library-filter-empty">No reading history matches that search.</p>}
+            </div>
+          </section>
+        )}
 
         <div className="library-section-header">
           <div>
@@ -194,16 +237,15 @@ export default function LibraryPage() {
         </div>
 
         {entries.length > 0 && (
-          <div className="library-search">
-            <Search size={17} />
-            <input
-              type="search"
-              placeholder="Search your collection..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
+          <div className="library-toolbar">
+            <label className="library-search"><Search size={17}/><input type="search" placeholder="Search your collection..." value={search} onChange={(event) => setSearch(event.target.value)}/></label>
+            <label className="library-sort"><SlidersHorizontal size={15}/><span>Sort</span><select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as "recent" | "oldest" | "title")}><option value="recent">Recently saved</option><option value="oldest">Oldest saved</option><option value="title">Title A–Z</option></select></label>
           </div>
         )}
+        {entries.length > 0 && <div className="library-filter-row" aria-label="Filter collection by content type">
+          <button type="button" className={typeFilter === "all" ? "active" : ""} onClick={() => setTypeFilter("all")}>All <span>{entries.length}</span></button>
+          {contentTypes.map((type) => <button type="button" key={type} className={typeFilter === type ? "active" : ""} onClick={() => setTypeFilter(type)}>{type.replace("-", " ")} <span>{entries.filter((entry) => entry.contentType === type).length}</span></button>)}
+        </div>}
 
         {loading ? (
           <div className="library-message">
@@ -230,11 +272,12 @@ export default function LibraryPage() {
             <p>
               {entries.length === 0
                 ? "You haven't bookmarked any series yet. Explore ComicVerse and save titles to build your collection."
-                : "Try searching with another title."}
+                : "Try a different search or content filter."}
             </p>
 
+            {entries.length > 0 && <button className="library-clear-filters" type="button" onClick={() => { setSearch(""); setTypeFilter("all"); }}>Clear filters</button>}
             {entries.length === 0 && (
-              <Link className="account-join" href="/#search">
+              <Link className="account-join" href="/#discover">
                 <BookOpen size={15} />
                 Explore ComicVerse
               </Link>
