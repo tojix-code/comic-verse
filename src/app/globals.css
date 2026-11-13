@@ -1353,3 +1353,28 @@ button, input { font: inherit; }
   background: #15111c;
   font-size: 10px;
 }
+
+/* ADMIN CATALOGUE */
+.admin-page { width:min(1100px,92%); margin:48px auto 80px; position:relative; z-index:1; }
+.admin-catalogue-intro { margin-bottom:30px; }
+.admin-catalogue-intro h1 { margin-top:10px; font-size:clamp(30px,4vw,44px); font-weight:850; }
+.admin-catalogue-intro p,.admin-note { margin-top:10px; color:#a99db6; font-size:13px; line-height:1.7; }
+.admin-panel { margin-top:22px; padding:24px; border:1px solid #30283a; border-radius:14px; background:#19151f; }
+.admin-panel h2 { display:flex; align-items:center; gap:10px; margin-bottom:20px; color:#f5efff; font-size:18px; font-weight:750; }
+.admin-panel h2 svg { color:#c084fc; }
+.admin-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.admin-form label { display:flex; flex-direction:column; gap:8px; color:#c8bdd4; font-size:12px; }
+.admin-form input,.admin-form select,.admin-form textarea { width:100%; min-width:0; padding:11px 12px; border:1px solid #40354c; border-radius:8px; outline:none; background:#100d15; color:#fff; font:inherit; }
+.admin-form input:focus,.admin-form select:focus,.admin-form textarea:focus { border-color:#a855f7; }
+.admin-form .admin-full { grid-column:1/-1; }
+.admin-form button { justify-self:start; display:inline-flex; align-items:center; gap:8px; padding:11px 16px; border-radius:8px; background:#9333ea; color:white; font-size:12px; font-weight:750; }
+.admin-form button:disabled { opacity:.6; cursor:wait; }
+.admin-feedback { margin:18px 0; padding:12px 15px; border:1px solid #59416d; border-radius:9px; color:#e9d5ff; background:#21192c; font-size:13px; }
+.admin-title-list { display:grid; gap:10px; }
+.admin-title-list > div { display:flex; flex-direction:column; gap:5px; padding:12px 0; border-bottom:1px solid #30283a; }
+.admin-title-list span { color:white; font-size:13px; font-weight:650; }
+.admin-title-list small { color:#93889e; font-size:11px; }
+.admin-denied { width:min(800px,92%); margin:100px auto; padding:35px; border:1px solid #49365d; border-radius:14px; background:#19151f; }
+.admin-denied h1 { font-size:24px; font-weight:800; }
+.admin-denied p { margin-top:10px; color:#aaa1b5; }
+@media(max-width:650px) { .admin-form { grid-template-columns:1fr; } .admin-form .admin-full { grid-column:auto; } .admin-panel { padding:18px; } }
