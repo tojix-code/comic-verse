@@ -142,7 +142,7 @@ export default function LibraryPage() {
 
   if (isPending || !session) {
     return (
-      <main className="library-loading" aria-live="polite">
+      <main id="main-content" className="library-loading" aria-live="polite">
         Loading your library…
       </main>
     );
