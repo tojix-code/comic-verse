@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; --bg: #09090d; --panel: #111117; --muted: #9693a3; --line: rgba(255,255,255,.085); --violet: #9b7bff; }
+:root { color-scheme: dark; --bg: #100e16; --panel: #191522; --card: #211b2d; --primary: #9333ea; --primary-hover: #a855f7; --accent: #c084fc; --muted: #a8a1b5; --line: #322a42; --violet: #a855f7; --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 90px; }
 body { margin: 0; background: var(--bg); color: #f5f3fa; font-family: 'DM Sans', Arial, sans-serif; }
@@ -1485,3 +1485,54 @@ button, input { font: inherit; }
 @media(max-width:600px) { .library-history-list article { align-items:flex-start; flex-direction:column; } }
 
 .review-actions .review-sync { border:1px solid #59416d; background:#30213e; color:#e9d5ff; }
+
+
+/* ComicVerse reference UI system — shared surfaces, controls and responsive chrome */
+html { scroll-padding-top: 5.5rem; -webkit-text-size-adjust: 100%; overflow-x: clip; }
+body { min-height: 100vh; overflow-x: hidden; background: radial-gradient(ellipse at 10% -4%, rgba(147,51,234,.14), transparent 32rem), var(--bg); color: #fff; }
+::selection { background: rgba(168,85,247,.38); color: #fff; }
+:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 3px; }
+input, select, textarea { color: #fff; background-color: #191522; border-color: var(--line); }
+input::placeholder, textarea::placeholder { color: #7c7388; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+.cv-panel { border: 1px solid var(--line); border-radius: 1rem; background: #191522; }
+.cv-chip { display:inline-flex; align-items:center; gap:.3rem; border:1px solid var(--line); border-radius:999px; padding:.3rem .75rem; font-size:.75rem; font-weight:600; color:#d9d4e2; background:#191522; }
+.cv-chip:hover,.cv-chip[aria-pressed="true"],.cv-chip[data-active="true"] { border-color:#a855f7; background:rgba(147,51,234,.24); color:#fff; }
+.cv-btn { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; min-height:2.6rem; padding:.55rem 1.1rem; border:1px solid var(--line); border-radius:.7rem; background:#191522; color:#fff; font-size:.875rem; font-weight:700; }
+.cv-btn-primary { border-color:transparent; background:linear-gradient(110deg,#9333ea,#7e22ce); color:#fff; }
+.cv-section-title { display:flex; align-items:center; gap:.6rem; }
+.cv-section-title:before { content:""; width:.2rem; height:1.15rem; border-radius:99px; background:#a855f7; }
+.cv-eyebrow,.home-kicker { color:#c084fc; }
+.site-header { padding-top:var(--safe-top); background:rgba(16,14,22,.88); border-bottom:1px solid var(--line); backdrop-filter:blur(16px); }
+.site-header-inner { width:min(1280px,calc(100% - 40px)); min-height:4rem; height:auto; gap:1rem; }
+.site-brand { color:#fff; font-weight:800; letter-spacing:-.04em; }
+.site-brand-icon { border-radius:.65rem; background:linear-gradient(135deg,#a855f7,#7e22ce); color:#fff; }
+.site-nav { gap:.25rem; margin-left:1rem; }
+.site-nav-link { display:inline-flex; align-items:center; gap:.35rem; padding:.55rem .75rem; border-radius:.6rem; color:#a8a1b5; font-size:.875rem; }
+.site-nav-link:hover,.site-nav-link[aria-current="page"] { color:#f3e8ff; background:rgba(168,85,247,.14); }
+.site-header-actions { gap:.6rem; }
+.site-search-button { border-color:var(--line); border-radius:.75rem; background:#191522; }
+.site-footer { margin-top:5rem; border-top:1px solid var(--line); background:#100e16; }
+.site-footer-inner { width:min(1280px,calc(100% - 40px)); }
+.footer-description,.footer-version { color:#a8a1b5; }
+.comic-card { border:1px solid var(--line); border-radius:1rem; background:#191522; overflow:hidden; transition:transform .2s,border-color .2s,box-shadow .2s; }
+.comic-card:hover { transform:translateY(-3px); border-color:rgba(168,85,247,.65); box-shadow:0 18px 42px rgba(0,0,0,.3); }
+.comic-card-cover { background:#211b2d; }
+.comic-card-cover img { transition:transform .35s; }
+.comic-card:hover .comic-card-cover img { transform:scale(1.035); }
+.comic-type { background:rgba(147,51,234,.88); color:white; border-radius:.45rem; }
+.comic-card-info h3 { color:#fff; }
+.comic-card-info p { color:#a8a1b5; }
+.home-container,.browse-page,.library-page { position:relative; z-index:1; }
+.home-section,.browse-results { color:#fff; }
+.home-section-heading h2,.browse-heading h2 { color:#fff; }
+.home-section-label { color:#a8a1b5; }
+.home-empty,.catalogue-notice { border:1px solid var(--line); background:#191522; color:#d9d4e2; border-radius:1rem; }
+.featured-carousel { border:1px solid var(--line); border-radius:1.25rem; background:#191522; overflow:hidden; }
+.featured-button,.home-primary-button { background:linear-gradient(110deg,#9333ea,#7e22ce); color:#fff; border-radius:.75rem; }
+.browse-filter { border:1px solid var(--line); border-radius:999px; color:#d9d4e2; background:#191522; }
+.browse-filter.active,.browse-filter:hover { border-color:#a855f7; background:rgba(147,51,234,.25); color:#fff; }
+.updates-list .update-item { border-color:var(--line); background:#191522; }
+@media(max-width:1023px) { .site-header-inner { width:calc(100% - 28px); min-height:62px; } .site-nav { gap:.1rem; } .site-nav-link { padding:.45rem .5rem; font-size:.8rem; } }
+@media(max-width:760px) { .site-header-inner { flex-wrap:wrap; padding:.55rem 0; } .site-nav { order:3; width:100%; overflow-x:auto; margin:0; padding-bottom:.15rem; } .site-header-actions { margin-left:auto; } .site-nav-link { white-space:nowrap; } .home-container,.browse-page { width:calc(100% - 28px); } }
+@media(prefers-reduced-motion:reduce) { *,*:before,*:after { scroll-behavior:auto!important; transition-duration:.01ms!important; animation-duration:.01ms!important; } }
