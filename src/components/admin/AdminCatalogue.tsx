@@ -7,7 +7,7 @@ type SeriesOption = { id: string; title: string; slug: string; published: boolea
 type ProviderTitle = { id: string; title: string; synopsis: string; coverUrl: string | null; contentType: string; status: string | null; year: number | null; tags: string[] };
 type Props = { initialSeries: SeriesOption[] };
 type ProviderChapter = { id: string; number: string | null; title: string | null; publishedAt: string | null; pages: number | null };
-type ProviderDetail = { title: { id: string; title: string; synopsis: string; coverUrl: string | null; status: string | null; year: number | null; contentType: string; authors: string[]; artists: string[]; genres: string[]; sourceUrl: string | null }; chapters: ProviderChapter[]; chapterCount: number };
+type ProviderDetail = { title: { id: string; title: string; synopsis: string; coverUrl: string | null; status: string | null; year: number | null; contentType: string; authors: string[]; artists: string[]; genres: string[]; sourceUrl: string | null }; chapters: ProviderChapter[]; chapterCount: number; chapterHasMore?: boolean };
 
 export function AdminCatalogue({ initialSeries }: Props) {
   const [titles, setTitles] = useState(initialSeries);
@@ -55,8 +55,12 @@ export function AdminCatalogue({ initialSeries }: Props) {
     if (!providerDetail || selectedChapterIds.length === 0) return;
     setImportingChapters(true); setMessage("");
     try {
-      const response = await fetch(`/api/admin/providers/mangadex/${encodeURIComponent(providerDetail.title.id)}`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chapterIds: selectedChapterIds }),
+      const endpoint = provider === "mangadex"
+        ? `/api/admin/providers/mangadex/${encodeURIComponent(providerDetail.title.id)}`
+        : `/api/admin/providers/${provider}`;
+      const response = await fetch(endpoint, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(provider === "mangadex" ? { chapterIds: selectedChapterIds } : { action: "import-chapters", providerId: providerDetail.title.id, chapterIds: selectedChapterIds }),
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || "Chapter import failed.");
@@ -160,7 +164,7 @@ export function AdminCatalogue({ initialSeries }: Props) {
         {loadingDetail && <p className="admin-note">Loading title and chapter metadata…</p>}
         {providerDetail && <div className="admin-provider-detail">
           <div className="admin-provider-detail-head">{providerDetail.title.coverUrl && <img src={providerDetail.title.coverUrl} alt=""/>}<div><h3>{providerDetail.title.title}</h3><p>{providerDetail.title.contentType} · {providerDetail.title.status || "Status unknown"} · {providerDetail.title.year || "Year unknown"}</p><p>Authors: {providerDetail.title.authors.join(", ") || "Unknown"} · Artists: {providerDetail.title.artists.join(", ") || "Unknown"}</p>{providerDetail.title.sourceUrl && <a href={providerDetail.title.sourceUrl} target="_blank" rel="noreferrer">Open source title ↗</a>}</div></div>
-          <p>{providerDetail.title.synopsis || "No synopsis available."}</p><p className="admin-note">{providerDetail.chapterCount} English chapter records available. Import the title as a draft first, then import selected chapter metadata.</p>
+          <p>{providerDetail.title.synopsis || "No synopsis available."}</p><p className="admin-note">{providerDetail.chapterCount} English chapter records available{providerDetail.chapterHasMore ? " (showing the first 100; more are available upstream)" : ""}. Import the title as a draft first, then import selected chapter metadata.</p>
           <div className="admin-provider-chapter-list">{providerDetail.chapters.map((item)=><label key={item.id}><input type="checkbox" checked={selectedChapterIds.includes(item.id)} onChange={(event)=>setSelectedChapterIds((current)=>event.target.checked?[...current,item.id]:current.filter((id)=>id!==item.id))}/><span>Chapter {item.number || "Special"}{item.title ? ` · ${item.title}` : ""}</span><small>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString("en-IN") : "Date unavailable"}</small></label>)}</div>
           <button type="button" disabled={importingChapters || selectedChapterIds.length===0} onClick={()=>void importSelectedChapters()}>{importingChapters ? "Importing…" : `Import ${selectedChapterIds.length} selected chapter(s)`}</button>
         </div>}
