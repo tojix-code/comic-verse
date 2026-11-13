@@ -1818,3 +1818,20 @@ html[data-reader-theme="sepia"] .reader-heading p, html[data-reader-theme="sepia
   .reader-control-group { flex-wrap: wrap; }
   .reader-shortcut-hint { width: 100%; margin-left: 0; }
 }
+
+
+/* Library collection controls */
+.library-toolbar { display:flex; align-items:center; gap:12px; margin:18px 0 10px; }
+.library-toolbar .library-search { flex:1; margin:0; }
+.library-sort { display:inline-flex; min-height:43px; align-items:center; gap:8px; padding:0 11px; border:1px solid var(--line); border-radius:11px; color:#9c95a9; background:rgba(255,255,255,.025); font-size:10px; }
+.library-sort select { max-width:150px; border:0; outline:0; color:#eee9f5; background:transparent; font-size:10px; }
+.library-sort option { color:#eee9f5; background:#191522; }
+.library-filter-row { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 22px; }
+.library-filter-row button { display:inline-flex; min-height:32px; align-items:center; gap:8px; padding:0 11px; border:1px solid var(--line); border-radius:999px; color:#aaa3b6; background:rgba(255,255,255,.025); font-size:10px; text-transform:capitalize; cursor:pointer; }
+.library-filter-row button.active { border-color:rgba(192,132,252,.42); color:#fff; background:rgba(147,51,234,.18); }
+.library-filter-row button span { color:#8e83a2; font-size:9px; }
+.library-history-search { display:flex; max-width:360px; align-items:center; gap:9px; margin:14px 0; padding:10px 12px; border:1px solid var(--line); border-radius:10px; color:#8e8799; background:rgba(255,255,255,.025); }
+.library-history-search input { width:100%; border:0; outline:0; color:#f5f3fa; background:transparent; font-size:11px; }
+.library-filter-empty { grid-column:1/-1; padding:16px; color:#827b8e; font-size:11px; }
+.library-clear-filters { margin-top:10px; padding:9px 14px; border:1px solid var(--line); border-radius:9px; color:#d8c9f5; background:rgba(255,255,255,.04); cursor:pointer; }
+@media(max-width:600px){.library-toolbar{align-items:stretch;flex-direction:column}.library-sort{justify-content:space-between}.library-sort select{max-width:none;flex:1}.library-history-search{max-width:none}}
