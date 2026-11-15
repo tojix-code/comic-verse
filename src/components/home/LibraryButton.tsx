@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Bookmark, Check, Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
@@ -24,6 +24,22 @@ export function LibraryButton({
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (!session) { setSaved(false); return; }
+    let active = true;
+    fetch("/api/library", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const result = await response.json();
+        if (!active || !result.success || !Array.isArray(result.data)) return;
+        setSaved(result.data.some((entry: { sourceKey: string; sourceSeriesId: string }) =>
+          entry.sourceKey === sourceKey && entry.sourceSeriesId === sourceSeriesId
+        ));
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [session, sourceKey, sourceSeriesId]);
 
   async function addToLibrary() {
     setLoading(true);

@@ -41,7 +41,7 @@ export function LatestUpdates({
         <div className="updates-list">
           {updates.map((item) => (
             <Link
-              href={`/comics/${item.seriesSlug}/chapter/${item.chapterId}`}
+              href={`${item.contentType === "novel" || item.contentType === "light-novel" ? "/novels" : "/comics"}/${item.seriesSlug}/chapter/${item.chapterId}`}
               className="update-item"
               key={item.chapterId}
             >

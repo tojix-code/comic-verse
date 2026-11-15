@@ -17,7 +17,7 @@ export function ComicCard({
   synopsis,
 }: ComicCardProps) {
   return (
-    <Link href={`/comics/${slug}`} className="comic-card group">
+    <Link href={`/comics/${slug}`} className="comic-card group cv-card-hover">
       <div className="comic-card-cover">
         {coverUrl ? (
           <img src={coverUrl} alt={title} loading="lazy" />

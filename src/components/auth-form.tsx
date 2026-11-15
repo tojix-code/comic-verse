@@ -30,7 +30,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         setError(result.error.message || "Authentication failed. Please try again.");
         return;
       }
-      router.replace("/library");
+      router.replace("/profile");
       router.refresh();
     } catch {
       setError("We couldn't reach the authentication service. Check your database and try again.");

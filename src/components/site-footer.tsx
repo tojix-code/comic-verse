@@ -16,14 +16,13 @@ export function SiteFooter() {
           </Link>
 
           <p className="footer-description">
-            Discover thoughtfully. Read comfortably.
+            Stories worth staying up for.
           </p>
         </div>
 
         <div className="footer-links">
           <Link href="/browse">Browse</Link>
           <Link href="/library">My Library</Link>
-          <Link href="/about">About</Link>
         </div>
 
         <span className="footer-version">COMICVERSE · 0.3.0</span>
